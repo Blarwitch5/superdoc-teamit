@@ -1,0 +1,98 @@
+---
+if (Astro.locals.user) {
+  return Astro.redirect('/')
+}
+
+let loginError = ''
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData()
+  const email    = String(formData.get('email') ?? '')
+  const password = String(formData.get('password') ?? '')
+
+  const response = await fetch(`${Astro.url.origin}/api/auth/sign-in/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+
+  if (response.ok) {
+    const setCookie = response.headers.get('set-cookie')
+    if (setCookie) Astro.response.headers.set('set-cookie', setCookie)
+    return Astro.redirect('/')
+  } else {
+    loginError = 'Email ou mot de passe incorrect.'
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connexion — Documentation Team IT</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      font-family: system-ui, sans-serif;
+      color: #f1f5f9;
+    }
+    .card {
+      width: 100%;
+      max-width: 360px;
+      padding: 2rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+    }
+    h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .error { color: #f87171; font-size: 0.875rem; margin-bottom: 1rem; }
+    form { display: flex; flex-direction: column; gap: 1rem; }
+    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: #94a3b8; }
+    input {
+      padding: 0.5rem 0.75rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.375rem;
+      color: #f1f5f9;
+      font-size: 1rem;
+    }
+    input:focus { outline: 2px solid #1a56db; }
+    button {
+      margin-top: 0.5rem;
+      padding: 0.625rem 1rem;
+      background: #1a56db;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button:hover { background: #1e429f; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Documentation Team IT</h1>
+    {loginError && <p class="error">{loginError}</p>}
+    <form method="POST">
+      <label>
+        Email
+        <input type="email" name="email" required autocomplete="email" />
+      </label>
+      <label>
+        Mot de passe
+        <input type="password" name="password" required autocomplete="current-password" />
+      </label>
+      <button type="submit">Se connecter</button>
+    </form>
+  </div>
+</body>
+</html>

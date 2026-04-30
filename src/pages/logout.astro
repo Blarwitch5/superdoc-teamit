@@ -1,0 +1,11 @@
+---
+await fetch(`${Astro.url.origin}/api/auth/sign-out`, {
+  method: 'POST',
+  headers: Astro.request.headers
+})
+Astro.response.headers.set(
+  'set-cookie',
+  'better-auth.session_token=; Max-Age=0; Path=/'
+)
+return Astro.redirect('/login')
+---
