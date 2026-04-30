@@ -38,6 +38,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@types/better-sqlite3@7.6.13)(better-sqlite3@12.9.0)(kysely@0.28.16)
+      kysely:
+        specifier: ^0.28.16
+        version: 0.28.16
       sharp:
         specifier: ^0.34.5
         version: 0.34.5

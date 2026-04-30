@@ -12,14 +12,18 @@ if (Astro.request.method === 'POST') {
 
   const response = await fetch(`${Astro.url.origin}/api/auth/sign-in/email`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Origin': Astro.url.origin,
+    },
     body: JSON.stringify({ email, password })
   })
 
   if (response.ok) {
     const setCookie = response.headers.get('set-cookie')
-    if (setCookie) Astro.response.headers.set('set-cookie', setCookie)
-    return Astro.redirect('/')
+    const redirectHeaders = new Headers({ location: '/' })
+    if (setCookie) redirectHeaders.append('set-cookie', setCookie)
+    return new Response(null, { status: 302, headers: redirectHeaders })
   } else {
     loginError = 'Email ou mot de passe incorrect.'
   }

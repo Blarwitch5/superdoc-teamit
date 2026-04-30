@@ -1,10 +1,18 @@
 import { betterAuth } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { db } from './db'
+import { SqliteDialect } from 'kysely'
+import Database from 'better-sqlite3'
+
+const env = (key: string) =>
+  (typeof import.meta !== 'undefined' && import.meta.env?.[key]) ?? process.env[key]
+
+const sqlite = new Database('./auth.db')
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, { provider: 'sqlite' }),
+  database: {
+    dialect: new SqliteDialect({ database: sqlite }),
+    type: 'sqlite',
+  },
   emailAndPassword: { enabled: true },
-  secret:  import.meta.env.AUTH_SECRET,
-  baseURL: import.meta.env.SITE_URL ?? 'http://localhost:4321',
+  secret: env('AUTH_SECRET'),
+  baseURL: env('SITE_URL') ?? 'http://localhost:4321',
 })
