@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Starlight brand tokens — valeurs provisoires, à remplacer après réception du logo client */
+:root {
+  --sl-color-accent-low:  #e8f0fe;
+  --sl-color-accent:      #1a56db;
+  --sl-color-accent-high: #1e429f;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low:  #1e3a8a;
+  --sl-color-accent:      #3b82f6;
+  --sl-color-accent-high: #93c5fd;
+}
