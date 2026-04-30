@@ -1,0 +1,30 @@
+{
+  "name": "teamit-superdoc",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^10.0.6",
+    "@astrojs/starlight": "^0.38.4",
+    "@keystatic/astro": "^5.0.6",
+    "@keystatic/core": "^0.5.50",
+    "@lucide/astro": "^1.14.0",
+    "@tailwindcss/vite": "^4.2.4",
+    "astro": "^6.1.9",
+    "better-auth": "^1.6.9",
+    "better-sqlite3": "^12.9.0",
+    "drizzle-orm": "^0.45.2",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.21.0"
+  }
+}
