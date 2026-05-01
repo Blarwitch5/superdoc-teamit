@@ -1,3 +1,41 @@
 ---
-// Placeholder — implemented in Task 10
+import type { Props } from '@astrojs/starlight/props'
+
+const { entry } = Astro.props as Props
+
+type FicheData = {
+  createdBy?:  string
+  createdAt?:  string
+  modifiedBy?: string
+  modifiedAt?: string
+}
+
+const data = entry?.data as FicheData | undefined
+
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('fr-CH', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  })
+}
+
+const hasMetadata = data?.createdBy || data?.modifiedBy
+const wasModified = data?.modifiedAt && data.modifiedAt !== data?.createdAt
 ---
+
+{hasMetadata && (
+  <footer class="mt-12 border-t border-[var(--sl-color-hairline)] pt-6 text-sm text-[var(--sl-color-gray-3)]">
+    {data?.createdBy && (
+      <p>
+        Créé par <strong class="text-[var(--sl-color-text)]">{data.createdBy}</strong>
+        {data.createdAt && <> le {formatDate(data.createdAt)}</>}
+      </p>
+    )}
+    {data?.modifiedBy && wasModified && (
+      <p>
+        Dernière modification par <strong class="text-[var(--sl-color-text)]">{data.modifiedBy}</strong>
+        {data.modifiedAt && <> le {formatDate(data.modifiedAt)}</>}
+      </p>
+    )}
+  </footer>
+)}
