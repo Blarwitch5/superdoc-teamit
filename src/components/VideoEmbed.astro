@@ -1,0 +1,47 @@
+---
+interface Props {
+  url: string
+}
+
+const { url } = Astro.props
+
+function getEmbedUrl(rawUrl: string): string | null {
+  try {
+    const parsed = new URL(rawUrl)
+    if (parsed.hostname.includes('youtube.com')) {
+      const videoId = parsed.searchParams.get('v')
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+    }
+    if (parsed.hostname.includes('youtu.be')) {
+      const videoId = parsed.pathname.slice(1)
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+    }
+    if (parsed.hostname.includes('vimeo.com')) {
+      const videoId = parsed.pathname.split('/').filter(Boolean).pop()
+      return videoId ? `https://player.vimeo.com/video/${videoId}` : null
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+const embedUrl = getEmbedUrl(url)
+---
+
+{embedUrl ? (
+  <div class="relative w-full pb-[56.25%] h-0 overflow-hidden rounded-lg mt-4">
+    <iframe
+      src={embedUrl}
+      class="absolute top-0 left-0 w-full h-full"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      title="Vidéo de documentation"
+      aria-label="Lecteur vidéo intégré"
+    />
+  </div>
+) : (
+  <a href={url} target="_blank" rel="noopener noreferrer" class="text-[var(--sl-color-accent)]">
+    Voir la vidéo
+  </a>
+)}
