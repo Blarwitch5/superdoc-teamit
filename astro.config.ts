@@ -57,6 +57,7 @@ export default defineConfig({
   },
   integrations: [
     starlight({
+      prerender: false,
       title: 'Documentation Team IT',
       social: [],
       logo: {

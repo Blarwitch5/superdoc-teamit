@@ -1,0 +1,5 @@
+---
+// Overrides Starlight's prerendered static/index.astro so that Astro middleware
+// can read request headers (cookies) and enforce authentication on the root URL.
+return Astro.redirect('/web/', 302)
+---
