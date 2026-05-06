@@ -1,14 +1,20 @@
 @import "tailwindcss";
 
-/* Starlight brand tokens — valeurs provisoires, à remplacer après réception du logo client */
+/* Team IT brand colors — rouge rgb(223,49,35), noir rgb(27,27,24) */
 :root {
-  --sl-color-accent-low:  #e8f0fe;
-  --sl-color-accent:      #1a56db;
-  --sl-color-accent-high: #1e429f;
+  --sl-color-accent-low:  #fde8e6;
+  --sl-color-accent:      rgb(223, 49, 35);
+  --sl-color-accent-high: #8c1b10;
 }
 
 :root[data-theme='dark'] {
-  --sl-color-accent-low:  #1e3a8a;
-  --sl-color-accent:      #3b82f6;
-  --sl-color-accent-high: #93c5fd;
+  --sl-color-accent-low:  #3d100a;
+  --sl-color-accent:      #e85748;
+  --sl-color-accent-high: #f5b8b3;
+}
+
+/* Sidebar — light red border */
+.sidebar-pane {
+  --sl-color-hairline: rgb(223 49 35 / 0.18);
+  --sl-color-hairline-light: rgb(223 49 35 / 0.1);
 }

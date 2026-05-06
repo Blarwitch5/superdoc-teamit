@@ -1,0 +1,94 @@
+---
+import { KeystaticApp } from '../../lib/keystatic-app.js'
+export const prerender = false
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin — Team IT</title>
+  <script is:inline>
+    (function () {
+      var RED   = 'rgb(223,49,35)'
+      var RED_D = '#c82a18'
+      var RED_T = '#9e1f0f'
+      var RED_L = '#f48b7e'
+
+      var LIGHT = [
+        ':root,',
+        '.kui-theme.kui-theme,',
+        '.kui-scheme--light.kui-scheme--light,',
+        '.kui-scheme--auto.kui-scheme--auto{',
+          '--kui-color-scale-indigo1:#fff5f4;',
+          '--kui-color-scale-indigo2:#ffedeb;',
+          '--kui-color-scale-indigo3:#ffddd9;',
+          '--kui-color-scale-indigo4:#ffcac4;',
+          '--kui-color-scale-indigo5:#ffb3ab;',
+          '--kui-color-scale-indigo6:#f99388;',
+          '--kui-color-scale-indigo7:#ef6d62;',
+          '--kui-color-scale-indigo8:#e54f44;',
+          '--kui-color-scale-indigo9:' + RED + ';',
+          '--kui-color-scale-indigo10:' + RED_D + ';',
+          '--kui-color-scale-indigo11:' + RED_T + ';',
+          '--kui-color-foreground-accent:' + RED_T + ';',
+          '--kui-color-border-accent:' + RED + ';',
+          '--kui-color-background-accent:#fff5f4;',
+          '--kui-color-background-accent-emphasis:' + RED + ';',
+          '--kui-color-alias-background-selected:#ffcac4;',
+          '--kui-color-alias-border-selected:' + RED + ';',
+          '--kui-color-alias-foreground-selected:' + RED_T + ';',
+          '--kui-color-alias-border-focused:' + RED + ';',
+          '--kui-color-alias-focus-ring:rgba(223,49,35,0.25);',
+        '}'
+      ].join('')
+
+      var DARK = [
+        '.kui-scheme--dark.kui-scheme--dark{',
+          '--kui-color-scale-indigo1:#1a0601;',
+          '--kui-color-scale-indigo2:#280c04;',
+          '--kui-color-scale-indigo3:#3e1209;',
+          '--kui-color-scale-indigo4:#51180d;',
+          '--kui-color-scale-indigo5:#611e12;',
+          '--kui-color-scale-indigo6:#792c1c;',
+          '--kui-color-scale-indigo7:#963c2a;',
+          '--kui-color-scale-indigo8:#b84f38;',
+          '--kui-color-scale-indigo9:' + RED + ';',
+          '--kui-color-scale-indigo10:#ea5040;',
+          '--kui-color-scale-indigo11:' + RED_L + ';',
+          '--kui-color-foreground-accent:' + RED_L + ';',
+          '--kui-color-border-accent:#b84f38;',
+          '--kui-color-background-accent:#1a0601;',
+          '--kui-color-background-accent-emphasis:' + RED + ';',
+          '--kui-color-alias-border-selected:#b84f38;',
+          '--kui-color-alias-focus-ring:rgba(223,49,35,0.35);',
+        '}'
+      ].join('')
+
+      var CSS_TEXT = LIGHT + DARK
+
+      // Create our override style tag
+      var brandStyle = document.createElement('style')
+      brandStyle.id = 'team-it-brand'
+      brandStyle.textContent = CSS_TEXT
+      document.head.appendChild(brandStyle)
+
+      // Keep our style tag LAST in <head> so it always wins the cascade
+      // (Keystatic injects CSS via insertRule on a dynamically created sheet)
+      new MutationObserver(function () {
+        if (document.head.lastElementChild !== brandStyle) {
+          document.head.appendChild(brandStyle)
+        }
+      }).observe(document.head, { childList: true })
+    })()
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif; }
+  </style>
+</head>
+<body>
+  <KeystaticApp client:only="react" />
+</body>
+</html>

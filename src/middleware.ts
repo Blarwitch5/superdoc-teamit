@@ -12,6 +12,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next()
   }
 
+  // Redirect to trailing slash so Starlight resolves index pages correctly
+  // (e.g. /web → /web/). Skip API routes and static file paths.
+  if (!pathname.endsWith('/') && !pathname.startsWith('/api/') && !pathname.startsWith('/keystatic') && !/\.[a-zA-Z0-9]+$/.test(pathname)) {
+    return context.redirect(pathname + '/', 301)
+  }
+
   const session = await auth.api.getSession({ headers: context.request.headers })
 
   if (!session) {

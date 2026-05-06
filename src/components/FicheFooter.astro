@@ -2,12 +2,15 @@
 import type { Props } from '@astrojs/starlight/props'
 
 const { entry } = Astro.props as Props
+const isLoggedIn = !!Astro.locals.user
 
 type FicheData = {
-  createdBy?:  string
-  createdAt?:  string
-  modifiedBy?: string
-  modifiedAt?: string
+  category?:    string
+  subcategory?: string
+  createdBy?:   string
+  createdAt?:   string
+  modifiedBy?:  string
+  modifiedAt?:  string
 }
 
 const data = entry?.data as FicheData | undefined
@@ -20,11 +23,27 @@ function formatDate(dateStr: string | undefined): string {
 }
 
 const hasMetadata = data?.createdBy || data?.modifiedBy
+const hasTaxonomy = data?.category || data?.subcategory
 const wasModified = data?.modifiedAt && data.modifiedAt !== data?.createdAt
+
+// Build Keystatic edit URL — only for fiches (entries with a category field)
+// Keystatic encodes "/" as "~1" in item slugs
+const keystkSlug = entry?.id?.replace(/\/index$/, '').replace(/\//g, '~1')
+const editUrl = data?.category && keystkSlug
+  ? `/keystatic/collection/fiches/item/${keystkSlug}`
+  : null
 ---
 
-{hasMetadata && (
+{(hasTaxonomy || hasMetadata || (isLoggedIn && editUrl)) && (
   <footer class="mt-12 border-t border-[var(--sl-color-hairline)] pt-6 text-sm text-[var(--sl-color-gray-3)]">
+    {(data?.category || data?.subcategory) && (
+      <p class="mb-3">
+        <span class="text-[var(--sl-color-gray-3)]">{data.category}</span>
+        {data.subcategory && (
+          <> &rsaquo; <span class="text-[var(--sl-color-gray-3)]">{data.subcategory}</span></>
+        )}
+      </p>
+    )}
     {data?.createdBy && (
       <p>
         Créé par <strong class="text-[var(--sl-color-text)]">{data.createdBy}</strong>
@@ -36,6 +55,14 @@ const wasModified = data?.modifiedAt && data.modifiedAt !== data?.createdAt
         Dernière modification par <strong class="text-[var(--sl-color-text)]">{data.modifiedBy}</strong>
         {data.modifiedAt && <> le {formatDate(data.modifiedAt)}</>}
       </p>
+    )}
+    {isLoggedIn && editUrl && (
+      <a
+        href={editUrl}
+        class="mt-4 inline-block text-xs text-[var(--sl-color-gray-3)] hover:text-[var(--sl-color-accent)] transition-colors"
+      >
+        Modifier cette fiche
+      </a>
     )}
   </footer>
 )}

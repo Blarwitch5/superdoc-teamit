@@ -1,5 +1,7 @@
 import { makeHandler } from '@keystatic/astro/api'
 import type { APIRoute } from 'astro'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { auth } from '../../../lib/auth'
 import config from '../../../../keystatic.config'
 
@@ -9,10 +11,6 @@ function todayISO(): string {
   return new Date().toISOString().split('T')[0]
 }
 
-/**
- * Decode base64url → UTF-8 string.
- * Keystatic sends file contents as base64url (with - and _ instead of + and /).
- */
 function base64UrlToUtf8(b64: string): string {
   const standard = b64.replace(/-/g, '+').replace(/_/g, '/')
   const binStr = atob(standard)
@@ -20,9 +18,6 @@ function base64UrlToUtf8(b64: string): string {
   return new TextDecoder().decode(bytes)
 }
 
-/**
- * Encode UTF-8 string → base64url.
- */
 function utf8ToBase64Url(text: string): string {
   const bytes = new TextEncoder().encode(text)
   let binStr = ''
@@ -32,19 +27,28 @@ function utf8ToBase64Url(text: string): string {
   return btoa(binStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
-/**
- * Inject author fields into YAML frontmatter of a markdown/mdoc file.
- *
- * Strategy:
- *  - If createdBy is absent or empty → set createdBy + createdAt
- *  - Always set modifiedBy + modifiedAt
- *
- * Uses simple string replacement rather than a full YAML parser since
- * these fields are guaranteed to be single-line plain text (defined as
- * fields.text() in the Keystatic schema).
- */
-function injectAuthorIntoFrontmatter(fileContent: string, userName: string, today: string): string {
-  // Only process files that have YAML frontmatter
+function readExistingAuthor(filePath: string): { createdBy: string; createdAt: string } {
+  try {
+    const content = readFileSync(join(process.cwd(), filePath), 'utf-8')
+    const createdByMatch = /^createdBy:\s*(.+)$/m.exec(content)
+    const createdAtMatch = /^createdAt:\s*(.+)$/m.exec(content)
+    const stripQuotes = (val: string) => val.trim().replace(/^["']|["']$/g, '')
+    return {
+      createdBy: createdByMatch ? stripQuotes(createdByMatch[1]) : '',
+      createdAt: createdAtMatch ? stripQuotes(createdAtMatch[1]) : ''
+    }
+  } catch {
+    return { createdBy: '', createdAt: '' }
+  }
+}
+
+function injectAuthorIntoFrontmatter(
+  fileContent: string,
+  userName: string,
+  today: string,
+  existingCreatedBy: string,
+  existingCreatedAt: string
+): string {
   if (!fileContent.startsWith('---')) return fileContent
 
   const closingDash = fileContent.indexOf('\n---', 3)
@@ -53,39 +57,50 @@ function injectAuthorIntoFrontmatter(fileContent: string, userName: string, toda
   let frontmatter = fileContent.slice(3, closingDash)
   const body = fileContent.slice(closingDash)
 
-  // Helper: set or replace a simple key: value pair in frontmatter
   const setField = (fm: string, key: string, value: string): string => {
     const pattern = new RegExp(`^(${key}:).*$`, 'm')
     const line = `${key}: ${value}`
     if (pattern.test(fm)) {
       return fm.replace(pattern, line)
     }
-    // Append before the closing delimiter
     return fm + `\n${line}`
   }
 
-  // Only set createdBy/createdAt when they are absent or empty
-  const createdByMatch = /^createdBy:\s*(.*)$/m.exec(frontmatter)
-  const createdByValue = createdByMatch?.[1]?.trim() ?? ''
-  if (!createdByValue) {
-    frontmatter = setField(frontmatter, 'createdBy', userName)
-    frontmatter = setField(frontmatter, 'createdAt', today)
-  }
-
-  // Always stamp modifiedBy / modifiedAt
+  // Dates are quoted to prevent YAML 1.1 from parsing ISO dates as Date objects
+  frontmatter = setField(frontmatter, 'createdBy', existingCreatedBy || userName)
+  frontmatter = setField(frontmatter, 'createdAt', `"${existingCreatedAt || today}"`)
   frontmatter = setField(frontmatter, 'modifiedBy', userName)
-  frontmatter = setField(frontmatter, 'modifiedAt', today)
+  frontmatter = setField(frontmatter, 'modifiedAt', `"${today}"`)
 
   return `---${frontmatter}${body}`
 }
 
+/**
+ * Return true if any .mdoc addition has a single-segment docs path
+ * (src/content/docs/{file}.mdoc — no category prefix).
+ * With path 'src/content/docs/**', valid files are at src/content/docs/{cat}/{slug}.mdoc
+ * (two segments). A single-segment path means the user omitted the category prefix.
+ */
+function hasSingleSegmentDocPath(additions: Array<{ path: string }>): boolean {
+  for (const addition of additions) {
+    if (!/\.(md|mdx|mdoc)$/.test(addition.path)) continue
+    const docsMatch = /^src\/content\/docs\/(.+)$/.exec(addition.path)
+    if (!docsMatch) continue
+    const segments = docsMatch[1].split('/')
+    // Valid:   ['web', 'deploiement-npm.mdoc'] → 2 parts
+    // Invalid: ['deploiement-npm.mdoc']        → 1 part
+    if (segments.length < 2) return true
+  }
+  return false
+}
+
 export const ALL: APIRoute = async (context) => {
   const { request } = context
+  const pathname = new URL(request.url).pathname
 
-  // Only intercept the local-mode update endpoint
   if (
     request.method === 'POST' &&
-    new URL(request.url).pathname.endsWith('/api/keystatic/update') &&
+    pathname.endsWith('/api/keystatic/update') &&
     (request.headers.get('content-type') ?? '').includes('application/json')
   ) {
     const session = await auth.api.getSession({ headers: request.headers })
@@ -98,31 +113,40 @@ export const ALL: APIRoute = async (context) => {
         }
 
         if (body?.additions && Array.isArray(body.additions) && body.additions.length > 0) {
+          // Reject saves where the slug has no category prefix.
+          // With path 'src/content/docs/*/*', single-segment slugs create files
+          // that Keystatic cannot load back (pattern mismatch).
+          if (hasSingleSegmentDocPath(body.additions)) {
+            return new Response(
+              JSON.stringify({
+                error: "Format de slug incorrect. Le slug doit commencer par la catégorie, ex: web/nom-de-la-fiche ou serveur/reset-mdp"
+              }),
+              { status: 400, headers: { 'content-type': 'application/json' } }
+            )
+          }
+
           const userName = session.user.name ?? session.user.email ?? 'Inconnu'
           const today = todayISO()
 
           const enrichedAdditions = body.additions.map((addition) => {
-            // Only process markdown / MDX / MDDoc files that likely have frontmatter
             if (!/\.(md|mdx|mdoc)$/.test(addition.path)) return addition
 
             try {
               const fileContent = base64UrlToUtf8(addition.contents)
-              const modified = injectAuthorIntoFrontmatter(fileContent, userName, today)
+              const { createdBy: existingCreatedBy, createdAt: existingCreatedAt } = readExistingAuthor(addition.path)
+              const modified = injectAuthorIntoFrontmatter(fileContent, userName, today, existingCreatedBy, existingCreatedAt)
               return { ...addition, contents: utf8ToBase64Url(modified) }
             } catch {
-              // If anything goes wrong decoding/re-encoding, return the original
               return addition
             }
           })
-
-          const enrichedBody = { ...body, additions: enrichedAdditions }
 
           return keystatic({
             ...context,
             request: new Request(request.url, {
               method: request.method,
               headers: request.headers,
-              body: JSON.stringify(enrichedBody),
+              body: JSON.stringify({ ...body, additions: enrichedAdditions }),
             }),
           })
         }

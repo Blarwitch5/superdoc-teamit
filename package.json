@@ -11,7 +11,9 @@
     "create-user": "tsx scripts/create-user.ts"
   },
   "dependencies": {
+    "@astrojs/mdx": "^5.0.4",
     "@astrojs/node": "^10.0.6",
+    "@astrojs/react": "^5.0.4",
     "@astrojs/starlight": "^0.38.4",
     "@keystatic/astro": "^5.0.6",
     "@keystatic/core": "^0.5.50",
@@ -22,10 +24,14 @@
     "better-sqlite3": "^12.9.0",
     "drizzle-orm": "^0.45.2",
     "kysely": "^0.28.16",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0"
   }
