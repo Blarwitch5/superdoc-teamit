@@ -48,17 +48,10 @@ export default config({
           label: 'Description',
           description: 'Résumé court affiché dans la sidebar.'
         }),
-        category: fields.select({
+        category: fields.text({
           label: 'Catégorie',
-          description: 'Détermine la section dans la sidebar. Doit correspondre au premier segment du slug.',
-          options: [
-            { label: 'Web',           value: 'web' },
-            { label: 'Administratif', value: 'administratif' },
-            { label: 'Installation',  value: 'installation' },
-            { label: 'Email',         value: 'email' },
-            { label: 'Serveur',       value: 'serveur' },
-          ],
-          defaultValue: 'web',
+          description: 'En minuscules, sans espaces ni accents — ex : web, serveur, administratif. Crée automatiquement une nouvelle section dans la sidebar si elle n\'existe pas encore.',
+          validation: { isRequired: true, length: { min: 1 } },
         }),
         subcategory: fields.text({
           label: 'Sous-catégorie',
