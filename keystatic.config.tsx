@@ -41,7 +41,7 @@ export default config({
           name: { label: 'Titre' },
           slug: {
             label: 'Identifiant (slug)',
-            description: 'OBLIGATOIRE : deux segments séparés par /  —  ex: web/deploiement-npm  ou  serveur/reset-mdp. Le premier segment doit correspondre à la catégorie choisie ci-dessus. Un slug sans / bloquera la sauvegarde.'
+            description: 'Identifiant unique de la fiche — ex : deploiement-npm ou reset-mdp. La catégorie est ajoutée automatiquement au chemin lors de la sauvegarde.'
           }
         }),
         description: fields.text({

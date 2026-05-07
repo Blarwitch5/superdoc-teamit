@@ -50,7 +50,6 @@ function injectAuthorIntoFrontmatter(
   existingCreatedAt: string
 ): string {
   if (!fileContent.startsWith('---')) return fileContent
-
   const closingDash = fileContent.indexOf('\n---', 3)
   if (closingDash === -1) return fileContent
 
@@ -59,14 +58,9 @@ function injectAuthorIntoFrontmatter(
 
   const setField = (fm: string, key: string, value: string): string => {
     const pattern = new RegExp(`^(${key}:).*$`, 'm')
-    const line = `${key}: ${value}`
-    if (pattern.test(fm)) {
-      return fm.replace(pattern, line)
-    }
-    return fm + `\n${line}`
+    return pattern.test(fm) ? fm.replace(pattern, `${key}: ${value}`) : fm + `\n${key}: ${value}`
   }
 
-  // Dates are quoted to prevent YAML 1.1 from parsing ISO dates as Date objects
   frontmatter = setField(frontmatter, 'createdBy', existingCreatedBy || userName)
   frontmatter = setField(frontmatter, 'createdAt', `"${existingCreatedAt || today}"`)
   frontmatter = setField(frontmatter, 'modifiedBy', userName)
@@ -76,22 +70,28 @@ function injectAuthorIntoFrontmatter(
 }
 
 /**
- * Return true if any .mdoc addition has a single-segment docs path
- * (src/content/docs/{file}.mdoc — no category prefix).
- * With path 'src/content/docs/**', valid files are at src/content/docs/{cat}/{slug}.mdoc
- * (two segments). A single-segment path means the user omitted the category prefix.
+ * If the addition path has no category prefix (e.g. src/content/docs/mon-process.mdx),
+ * read the category from the frontmatter and rewrite to src/content/docs/{category}/mon-process.mdx.
  */
-function hasSingleSegmentDocPath(additions: Array<{ path: string }>): boolean {
-  for (const addition of additions) {
-    if (!/\.(md|mdx|mdoc)$/.test(addition.path)) continue
-    const docsMatch = /^src\/content\/docs\/(.+)$/.exec(addition.path)
-    if (!docsMatch) continue
-    const segments = docsMatch[1].split('/')
-    // Valid:   ['web', 'deploiement-npm.mdoc'] → 2 parts
-    // Invalid: ['deploiement-npm.mdoc']        → 1 part
-    if (segments.length < 2) return true
+function fixCategoryPath(addition: { path: string; contents: string }): { path: string; contents: string } {
+  if (!/\.(md|mdx|mdoc)$/.test(addition.path)) return addition
+  const docsMatch = /^src\/content\/docs\/(.+)$/.exec(addition.path)
+  if (!docsMatch) return addition
+  const segments = docsMatch[1].split('/')
+  if (segments.length >= 2) return addition // already has category prefix
+
+  try {
+    const fileContent = base64UrlToUtf8(addition.contents)
+    const categoryMatch = /^category:\s*(.+)$/m.exec(fileContent)
+    if (!categoryMatch) return addition
+    const category = categoryMatch[1].trim().replace(/^["']|["']$/g, '').toLowerCase().replace(/\s+/g, '-')
+    if (!category) return addition
+    const ext = (addition.path.match(/\.(md|mdx|mdoc)$/) ?? ['.mdx'])[0]
+    const slug = segments[0].replace(/\.(md|mdx|mdoc)$/, '')
+    return { ...addition, path: `src/content/docs/${category}/${slug}${ext}` }
+  } catch {
+    return addition
   }
-  return false
 }
 
 export const ALL: APIRoute = async (context) => {
@@ -113,31 +113,20 @@ export const ALL: APIRoute = async (context) => {
         }
 
         if (body?.additions && Array.isArray(body.additions) && body.additions.length > 0) {
-          // Reject saves where the slug has no category prefix.
-          // With path 'src/content/docs/*/*', single-segment slugs create files
-          // that Keystatic cannot load back (pattern mismatch).
-          if (hasSingleSegmentDocPath(body.additions)) {
-            return new Response(
-              JSON.stringify({
-                error: "Format de slug incorrect. Le slug doit commencer par la catégorie, ex: web/nom-de-la-fiche ou serveur/reset-mdp"
-              }),
-              { status: 400, headers: { 'content-type': 'application/json' } }
-            )
-          }
-
           const userName = session.user.name ?? session.user.email ?? 'Inconnu'
           const today = todayISO()
 
           const enrichedAdditions = body.additions.map((addition) => {
             if (!/\.(md|mdx|mdoc)$/.test(addition.path)) return addition
 
+            const fixed = fixCategoryPath(addition)
             try {
-              const fileContent = base64UrlToUtf8(addition.contents)
-              const { createdBy: existingCreatedBy, createdAt: existingCreatedAt } = readExistingAuthor(addition.path)
+              const fileContent = base64UrlToUtf8(fixed.contents)
+              const { createdBy: existingCreatedBy, createdAt: existingCreatedAt } = readExistingAuthor(fixed.path)
               const modified = injectAuthorIntoFrontmatter(fileContent, userName, today, existingCreatedBy, existingCreatedAt)
-              return { ...addition, contents: utf8ToBase64Url(modified) }
+              return { ...fixed, contents: utf8ToBase64Url(modified) }
             } catch {
-              return addition
+              return fixed
             }
           })
 

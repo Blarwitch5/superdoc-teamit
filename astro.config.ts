@@ -105,7 +105,7 @@ function keystaticWithCustomApi() {
   return {
     name: 'keystatic',
     hooks: {
-      'astro:config:setup': ({ injectRoute, updateConfig, config }: any) => {
+      'astro:config:setup': ({ updateConfig, config }: any) => {
         updateConfig({
           server: config.server.host ? {} : { host: '127.0.0.1' },
           vite: {
@@ -129,12 +129,7 @@ function keystaticWithCustomApi() {
           new URL('keystatic-imports.js', dotAstroDir),
           `import "@keystatic/astro/ui";\nimport "@keystatic/astro/api";\nimport "@keystatic/core/ui";\n`
         )
-        // UI route only — API route is our own file-based route
-        injectRoute({
-          entrypoint: '@keystatic/astro/internal/keystatic-astro-page.astro',
-          pattern: '/keystatic/[...params]',
-          prerender: false
-        })
+
       }
     }
   }
