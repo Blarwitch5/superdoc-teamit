@@ -159,9 +159,10 @@ export default defineConfig({
       },
       customCss: ['./src/styles/global.css'],
       components: {
-        Footer:      './src/components/FicheFooter.astro',
-        SocialIcons: './src/components/HeaderNav.astro',
-        Sidebar:     './src/components/DynamicSidebar.astro',
+        Footer:       './src/components/FicheFooter.astro',
+        SocialIcons:  './src/components/HeaderNav.astro',
+        Sidebar:      './src/components/DynamicSidebar.astro',
+        PageSidebar:  './src/components/EditPageSidebar.astro',
       },
       sidebar: buildSidebar(),
     }),

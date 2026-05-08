@@ -27,10 +27,9 @@ const hasTaxonomy = data?.category || data?.subcategory
 const wasModified = data?.modifiedAt && data.modifiedAt !== data?.createdAt
 
 // Build Keystatic edit URL — only for fiches (entries with a category field)
-// Keystatic encodes "/" as "~1" in item slugs
-const keystkSlug = entry?.id?.replace(/\/index$/, '').replace(/\//g, '~1')
-const editUrl = data?.category && keystkSlug
-  ? `/keystatic/collection/fiches/item/${keystkSlug}`
+// Keystatic uses encodeURIComponent for the item slug in its admin URLs
+const editUrl = data?.category && entry?.id
+  ? `/keystatic/collection/fiches/item/${encodeURIComponent(entry.id)}`
   : null
 ---
 
