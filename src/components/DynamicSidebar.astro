@@ -1,0 +1,110 @@
+---
+import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro'
+import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro'
+import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter'
+import { readdirSync, statSync, readFileSync } from 'node:fs'
+import { join, basename } from 'node:path'
+
+type SidebarLink = { type: 'link'; label: string; href: string; isCurrent: boolean; badge: undefined; attrs: Record<string, unknown> }
+type SidebarGroup = { type: 'group'; label: string; entries: SidebarEntry[]; collapsed: boolean; badge: undefined }
+type SidebarEntry = SidebarLink | SidebarGroup
+
+const CATEGORY_LABELS: Record<string, string> = {
+  web:           'Web',
+  administratif: 'Administratif',
+  installation:  'Installation',
+  email:         'Email',
+  serveur:       'Serveur',
+}
+
+function parseFm(content: string): Record<string, string> {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)
+  if (!match) return {}
+  const fm: Record<string, string> = {}
+  for (const line of match[1].split(/\r?\n/)) {
+    const colonIdx = line.indexOf(':')
+    if (colonIdx === -1) continue
+    fm[line.slice(0, colonIdx).trim()] = line.slice(colonIdx + 1).trim().replace(/^['"]|['"]$/g, '')
+  }
+  return fm
+}
+
+const currentPath = new URL(Astro.request.url).pathname.replace(/\/$/, '') || '/'
+const docsPath = join(process.cwd(), 'src/content/docs')
+
+const isActive = (href: string) => currentPath === (href.replace(/\/$/, '') || '/')
+
+const categoryDirs = readdirSync(docsPath)
+  .filter(name => {
+    try { return statSync(join(docsPath, name)).isDirectory() && !name.startsWith('.') }
+    catch { return false }
+  })
+  .sort()
+
+const sidebar: SidebarEntry[] = []
+
+for (const dir of categoryDirs) {
+  const dirPath = join(docsPath, dir)
+  const label = CATEGORY_LABELS[dir] ?? (dir.charAt(0).toUpperCase() + dir.slice(1))
+
+  let files: string[]
+  try { files = readdirSync(dirPath).filter(f => /\.(mdx|mdoc|md)$/.test(f)).sort() }
+  catch { continue }
+
+  const items = files.map(file => {
+    const slug = basename(file).replace(/\.(mdx|mdoc|md)$/, '')
+    const href = slug === 'index' ? `/${dir}/` : `/${dir}/${slug}/`
+    try {
+      const fm = parseFm(readFileSync(join(dirPath, file), 'utf-8'))
+      return { href, title: fm.title || slug, subcategory: fm.subcategory || '' }
+    } catch {
+      return { href, title: slug, subcategory: '' }
+    }
+  })
+
+  const toLink = (item: typeof items[number]): SidebarLink => ({
+    type: 'link',
+    label: item.title,
+    href: item.href,
+    isCurrent: isActive(item.href),
+    badge: undefined,
+    attrs: {},
+  })
+
+  if (!items.some(item => item.subcategory)) {
+    sidebar.push({ type: 'group', label, collapsed: false, badge: undefined, entries: items.map(toLink) })
+  } else {
+    const ungrouped = items.filter(item => !item.subcategory)
+    const grouped: Record<string, typeof items> = {}
+    for (const item of items.filter(item => item.subcategory)) {
+      ;(grouped[item.subcategory] ??= []).push(item)
+    }
+    sidebar.push({
+      type: 'group',
+      label,
+      collapsed: false,
+      badge: undefined,
+      entries: [
+        ...ungrouped.map(toLink),
+        ...Object.entries(grouped)
+          .sort(([a], [b]) => a.localeCompare(b, 'fr'))
+          .map(([sub, subItems]): SidebarGroup => ({
+            type: 'group',
+            label: sub,
+            collapsed: false,
+            badge: undefined,
+            entries: subItems.map(toLink),
+          })),
+      ],
+    })
+  }
+}
+---
+
+<SidebarPersister>
+  <SidebarSublist sublist={sidebar} />
+</SidebarPersister>
+
+<div class="md:sl-hidden">
+  <MobileMenuFooter />
+</div>

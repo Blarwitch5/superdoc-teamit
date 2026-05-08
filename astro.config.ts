@@ -161,6 +161,7 @@ export default defineConfig({
       components: {
         Footer:      './src/components/FicheFooter.astro',
         SocialIcons: './src/components/HeaderNav.astro',
+        Sidebar:     './src/components/DynamicSidebar.astro',
       },
       sidebar: buildSidebar(),
     }),
