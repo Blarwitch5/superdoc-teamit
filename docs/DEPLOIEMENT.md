@@ -48,7 +48,7 @@ Contenu de `.env` :
 # Générer avec : node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 AUTH_SECRET=<clé-aléatoire-64-caractères-hex>
 
-SITE_URL=https://doc.team-it.ch
+SITE_URL=https://superdoc.team-it.ch
 ```
 
 ### 3. Installer et builder
@@ -90,7 +90,7 @@ Le port 80 doit être joignable depuis internet pour la validation ACME.
 Désactiver temporairement l'IP whitelist si elle est déjà active.
 
 ```bash
-sudo certbot certonly --nginx -d doc.team-it.ch
+sudo certbot certonly --nginx -d superdoc.team-it.ch
 ```
 
 ### 2. Installer la config Nginx
