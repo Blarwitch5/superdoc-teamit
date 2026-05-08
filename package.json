@@ -2,13 +2,16 @@
   "name": "teamit-superdoc",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "create-user": "tsx scripts/create-user.ts"
+    "create-user": "tsx scripts/create-user.ts",
+    "publish": "pnpm build && pm2 reload teamit-superdoc"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
