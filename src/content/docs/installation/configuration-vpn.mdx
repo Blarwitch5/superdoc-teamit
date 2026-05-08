@@ -1,0 +1,50 @@
+---
+title: Configuration du VPN
+description: Installer et configurer le client VPN pour l'accès distant au réseau de l'entreprise.
+category: installation
+---
+
+## Prérequis
+
+- Identifiants VPN fournis par l'administrateur réseau
+- Fichier de configuration (`.ovpn` pour OpenVPN ou profil fourni)
+
+## Installation du client OpenVPN
+
+1. Téléchargez **OpenVPN Connect** depuis [openvpn.net/client](https://openvpn.net/client/).
+2. Lancez l'installeur et suivez les étapes (options par défaut).
+
+## Importer le profil de connexion
+
+1. Ouvrez OpenVPN Connect.
+2. Cliquez sur **+** → **Upload File**.
+3. Sélectionnez le fichier `.ovpn` fourni par l'IT.
+4. Entrez le nom du profil (ex : `VPN Entreprise`) → **Ajouter**.
+
+## Se connecter
+
+1. Dans OpenVPN Connect, sélectionnez le profil importé.
+2. Entrez vos identifiants (nom d'utilisateur et mot de passe VPN).
+3. Cliquez sur **Connecter** — l'icône passe au vert en cas de succès.
+
+## Vérification
+
+1. Une fois connecté, ouvrez un navigateur et accédez à une ressource interne (ex : serveur de fichiers `\\\\192.168.x.x` ou intranet).
+2. Si la connexion réseau interne fonctionne, le VPN est opérationnel.
+
+## Déconnexion
+
+Cliquez sur le bouton **Déconnecter** dans OpenVPN Connect. Déconnectez-vous toujours du VPN quand il n'est plus nécessaire.
+
+## Dépannage
+
+| Problème | Solution |
+|---|---|
+| Connexion refusée | Vérifiez identifiants et que le fichier `.ovpn` est le bon |
+| VPN connecté mais pas d'accès réseau | Vérifiez le split tunneling avec l'admin |
+| Déconnexions fréquentes | Vérifiez la stabilité de la connexion Internet locale |
+
+## Notes
+
+- Le mot de passe VPN est différent du mot de passe Windows/AD. Contactez l'IT pour tout renouvellement.
+- Ne partagez jamais votre profil `.ovpn` ou vos identifiants VPN.

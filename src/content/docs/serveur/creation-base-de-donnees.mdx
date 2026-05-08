@@ -1,0 +1,44 @@
+---
+title: Création d'une base de données MySQL
+description: Créer une base de données MySQL et un utilisateur dédié sur Infomaniak.
+category: serveur
+---
+
+## Prérequis
+
+- Hébergement Infomaniak actif incluant une offre avec base de données
+- Accès au Manager avec droits d'administration
+
+## Créer la base de données
+
+1. Connectez-vous au Manager → **Hébergement Web** → sélectionnez l'hébergement → **Gérer**.
+2. Allez dans l'onglet **Bases de données**.
+3. Cliquez sur **Créer une base de données**.
+4. Renseignez :
+   - **Nom** : choisissez un nom explicite (ex : `nomprojet_prod`)
+   - **Utilisateur** : créez un utilisateur dédié (ex : `nomprojet_user`)
+   - **Mot de passe** : générez un mot de passe fort
+5. Notez les informations affichées après création :
+   - Serveur MySQL (ex : `mysqlXXXX.infomaniak.com`)
+   - Nom de la base, utilisateur, mot de passe
+
+## Accéder à phpMyAdmin
+
+1. Dans l'onglet **Bases de données**, cliquez sur **phpMyAdmin** à côté de la base créée.
+2. Connectez-vous avec l'utilisateur et le mot de passe créés.
+3. Vous pouvez importer un dump SQL ou créer les tables manuellement.
+
+## Exemple de configuration (PHP / WordPress)
+
+```php
+define('DB_NAME',     'nomprojet_prod');
+define('DB_USER',     'nomprojet_user');
+define('DB_PASSWORD', 'motdepasse');
+define('DB_HOST',     'mysqlXXXX.infomaniak.com');
+```
+
+## Notes
+
+- Un seul utilisateur par base est suffisant pour la plupart des projets.
+- Pour les accès distants (depuis un poste local), activez l'accès distant dans les paramètres de la base de données — à désactiver une fois le travail terminé.
+- Faites une sauvegarde régulière via phpMyAdmin → **Exporter** (voir fiche *Sauvegarde d'un site web*).

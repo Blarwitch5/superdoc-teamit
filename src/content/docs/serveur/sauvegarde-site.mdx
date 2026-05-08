@@ -1,0 +1,46 @@
+---
+title: Sauvegarde d'un site web
+description: Effectuer une sauvegarde complète des fichiers et de la base de données d'un hébergement.
+category: serveur
+---
+
+## Ce que couvre cette sauvegarde
+
+- Fichiers du site (dossier `web/`)
+- Base de données MySQL
+
+## 1. Sauvegarder les fichiers via FTP
+
+1. Connectez-vous à l'hébergement avec FileZilla (voir fiche *Connexion FTP / SFTP*).
+2. Sélectionnez l'intégralité du dossier `web/` dans le panneau distant.
+3. Faites un clic droit → **Télécharger** dans un dossier local daté (ex : `sauvegarde_2026-05-08/`).
+
+## 2. Sauvegarder la base de données via phpMyAdmin
+
+1. Ouvrez phpMyAdmin depuis le Manager → **Hébergement Web** → **Bases de données**.
+2. Sélectionnez la base de données dans le panneau de gauche.
+3. Cliquez sur **Exporter**.
+4. Choisissez le format **SQL** → cliquez sur **Exécuter**.
+5. Enregistrez le fichier `.sql` dans le même dossier que les fichiers du site.
+
+## 3. Archiver la sauvegarde
+
+1. Compressez le dossier de sauvegarde en `.zip` ou `.tar.gz`.
+2. Stockez l'archive sur un support externe ou un espace cloud sécurisé.
+
+## Restaurer la base de données
+
+1. Dans phpMyAdmin, sélectionnez la base de données cible.
+2. Cliquez sur **Importer** → sélectionnez le fichier `.sql` → **Exécuter**.
+
+## Fréquence recommandée
+
+| Type de site | Fréquence |
+|---|---|
+| Site vitrine statique | Mensuelle ou avant chaque modification |
+| Site e-commerce / WordPress actif | Hebdomadaire |
+| Application métier critique | Quotidienne (automatiser si possible) |
+
+## Notes
+
+- Infomaniak propose des sauvegardes automatiques quotidiennes (7 jours de rétention) accessibles dans le Manager → **Sauvegardes**. Cette fiche documente la sauvegarde manuelle en complément.

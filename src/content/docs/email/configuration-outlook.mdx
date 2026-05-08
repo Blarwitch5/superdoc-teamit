@@ -1,0 +1,37 @@
+---
+title: Configuration sur Outlook
+description: Configurer une boîte mail Infomaniak dans Outlook (Windows ou Mac).
+category: email
+---
+
+## Paramètres de connexion Infomaniak
+
+| Paramètre | Valeur |
+|---|---|
+| Serveur IMAP | `mail.infomaniak.com` |
+| Port IMAP | `993` (SSL/TLS) |
+| Serveur SMTP | `mail.infomaniak.com` |
+| Port SMTP | `465` (SSL/TLS) |
+| Identifiant | Adresse e-mail complète |
+
+## Ajouter le compte dans Outlook
+
+1. Ouvrez Outlook → **Fichier** → **Ajouter un compte**.
+2. Entrez l'adresse e-mail → cliquez sur **Connexion**.
+3. Si Outlook ne configure pas automatiquement, choisissez **IMAP**.
+4. Renseignez le serveur entrant :
+   - Serveur : `mail.infomaniak.com`, Port : `993`, Chiffrement : SSL/TLS
+5. Renseignez le serveur sortant :
+   - Serveur : `mail.infomaniak.com`, Port : `465`, Chiffrement : SSL/TLS
+6. Entrez le mot de passe → cliquez sur **Connexion**.
+
+## Vérification
+
+- Envoyez un e-mail test depuis la boîte configurée.
+- Vérifiez la réception sur le Webmail Infomaniak ([mail.infomaniak.com](https://mail.infomaniak.com)).
+
+## Dépannage
+
+- **Erreur d'authentification** : vérifiez que l'identifiant est l'adresse complète (pas seulement la partie avant `@`).
+- **Envoi refusé** : assurez-vous que l'authentification SMTP est activée (Outlook : **Paramètres avancés** → cocher *Mon serveur sortant requiert une authentification*).
+- **Certificat non fiable** : acceptez le certificat Infomaniak ou mettez à jour Outlook.

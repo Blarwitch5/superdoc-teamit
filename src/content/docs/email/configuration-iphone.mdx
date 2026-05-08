@@ -1,0 +1,38 @@
+---
+title: Configuration sur iPhone / iPad
+description: Ajouter une boîte mail Infomaniak sur iOS / iPadOS.
+category: email
+---
+
+## Paramètres nécessaires
+
+- Adresse e-mail complète (ex : `jean.dupont@entreprise.ch`)
+- Mot de passe de la boîte mail
+- Serveur : `mail.infomaniak.com`
+
+## Étapes
+
+1. Allez dans **Réglages** → **Mail** → **Comptes** → **Ajouter un compte**.
+2. Choisissez **Autre** (tout en bas de la liste).
+3. Sélectionnez **Ajouter un compte Mail**.
+4. Renseignez :
+   - **Nom** : Prénom Nom (affiché dans les e-mails envoyés)
+   - **Adresse** : adresse e-mail complète
+   - **Mot de passe** : mot de passe de la boîte
+   - **Description** : ex. "Travail"
+5. Cliquez sur **Suivant** — iOS tente la configuration automatique.
+6. Si la configuration manuelle est demandée, choisissez **IMAP** et renseignez :
+   - **Serveur de réception** : `mail.infomaniak.com`, Port : `993`
+   - **Serveur d'envoi** : `mail.infomaniak.com`, Port : `465`
+   - Identifiant et mot de passe dans les deux sections
+7. Cliquez sur **Enregistrer**.
+
+## Vérification
+
+- Ouvrez l'application Mail — les messages doivent se synchroniser.
+- Envoyez un e-mail test depuis l'iPhone et vérifiez la réception sur le Webmail.
+
+## Notes
+
+- Activez la synchronisation des **Contacts** et du **Calendrier** si proposé (protocole CardDAV/CalDAV d'Infomaniak).
+- En cas de problème de certificat, allez dans **Réglages** → **Général** → **Gestion VPN et appareils** et faites confiance au profil.

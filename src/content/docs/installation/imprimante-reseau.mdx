@@ -1,0 +1,45 @@
+---
+title: Installation d'une imprimante réseau
+description: Ajouter et configurer une imprimante partagée sur le réseau local.
+category: installation
+---
+
+## Prérequis
+
+- Imprimante connectée au réseau local (câble RJ45 ou Wi-Fi)
+- Adresse IP de l'imprimante (voir étiquette au dos ou impression de la page de config)
+- Drivers disponibles sur le site du fabricant
+
+## Trouver l'adresse IP de l'imprimante
+
+Si l'adresse n'est pas connue :
+
+1. Sur l'imprimante, imprimez la **page de configuration réseau** (menu de l'imprimante ou bouton dédié).
+2. Ou scannez le réseau depuis un poste : **cmd** → `arp -a` pour lister les équipements connectés.
+
+## Installer le pilote
+
+1. Rendez-vous sur le site du fabricant (HP, Canon, Brother, etc.) → téléchargez le pilote pour le modèle exact.
+2. Exécutez l'installeur → choisissez l'installation **réseau / TCP/IP** (ne pas utiliser le câble USB).
+3. Entrez l'adresse IP de l'imprimante quand demandé.
+
+## Ajouter l'imprimante manuellement (si le pilote ne suffit pas)
+
+1. **Paramètres** → **Bluetooth et appareils** → **Imprimantes et scanners** → **Ajouter**.
+2. Cliquez sur **L'imprimante n'est pas dans la liste**.
+3. Choisissez **Ajouter une imprimante locale avec un port manuel**.
+4. Créez un port TCP/IP standard → entrez l'adresse IP.
+5. Sélectionnez le pilote dans la liste ou installez-le manuellement.
+
+## Définir comme imprimante par défaut
+
+1. Dans **Imprimantes et scanners**, cliquez sur l'imprimante → **Gérer** → **Définir par défaut**.
+
+## Test
+
+Imprimez une page de test depuis **Gérer** → **Imprimer une page de test**.
+
+## Notes
+
+- Assignez une IP fixe à l'imprimante depuis son interface web ou depuis le DHCP du routeur pour éviter que l'adresse change.
+- Pour partager l'imprimante vers d'autres postes : **Propriétés de l'imprimante** → onglet **Partage** → cocher **Partager cette imprimante**.

@@ -1,0 +1,44 @@
+---
+title: Connexion FTP / SFTP
+description: Se connecter aux fichiers d'un hébergement Infomaniak via FTP ou SFTP avec FileZilla.
+category: serveur
+---
+
+## Prérequis
+
+- [FileZilla](https://filezilla-project.org/) installé (ou Cyberduck en alternative)
+- Identifiants FTP disponibles dans le Manager Infomaniak
+
+## Récupérer les identifiants FTP
+
+1. Connectez-vous au Manager → **Hébergement Web** → sélectionnez l'hébergement → **Gérer**.
+2. Allez dans l'onglet **FTP / SSH**.
+3. Notez :
+   - **Serveur FTP** (ex : `ftp1234.infomaniak.com`)
+   - **Utilisateur FTP principal**
+   - **Mot de passe** (si oublié, cliquez sur **Réinitialiser le mot de passe FTP**)
+
+## Configurer FileZilla (SFTP recommandé)
+
+1. Ouvrez FileZilla → **Fichier** → **Gestionnaire de sites** → **Nouveau site**.
+2. Renseignez :
+   - **Protocole** : `SFTP - SSH File Transfer Protocol`
+   - **Hôte** : `ftp1234.infomaniak.com`
+   - **Port** : `22`
+   - **Type d'authentification** : Normale
+   - **Identifiant** et **Mot de passe** FTP
+3. Cliquez sur **Connexion**.
+
+## Navigation dans les fichiers
+
+- Le dossier des fichiers web accessibles publiquement est **`web/`**.
+- Ne modifiez pas les dossiers système en dehors de `web/`.
+
+## FTP classique (si SFTP non disponible)
+
+Utilisez le port `21` avec le protocole FTP et le chiffrement **FTP explicite sur TLS**.
+
+## Notes
+
+- Préférez toujours SFTP (port 22) au FTP simple pour la sécurité.
+- Pour créer des utilisateurs FTP supplémentaires avec accès restreint à un sous-dossier : Manager → **FTP / SSH** → **Ajouter un utilisateur FTP**.

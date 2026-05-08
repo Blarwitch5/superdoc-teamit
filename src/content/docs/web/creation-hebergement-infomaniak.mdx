@@ -1,0 +1,32 @@
+---
+title: Création d'un hébergement web Infomaniak
+description: Créer et configurer un nouvel hébergement mutualisé sur Infomaniak.
+category: web
+---
+
+## Prérequis
+
+- Accès au Manager Infomaniak avec les droits d'administration
+- Nom de domaine déjà enregistré sur le compte (ou à associer après)
+
+## Étapes
+
+1. Connectez-vous au [Manager Infomaniak](https://manager.infomaniak.com).
+2. Dans le menu de gauche, cliquez sur **Hébergement Web** → **Commander un hébergement**.
+3. Choisissez le type d'hébergement adapté (généralement **Cloud Hosting**).
+4. Sélectionnez l'offre, puis associez le nom de domaine principal.
+5. Validez la commande — l'hébergement est actif en quelques minutes.
+6. Une fois créé, allez dans **Hébergement Web** → cliquez sur l'hébergement → **Gérer**.
+7. Notez les informations FTP disponibles dans l'onglet **FTP / SSH** :
+   - Serveur : `ftpXXXX.infomaniak.com`
+   - Utilisateur et mot de passe FTP principal
+
+## Vérification
+
+- Accédez à l'URL du domaine dans un navigateur — une page Infomaniak par défaut doit s'afficher.
+- Testez la connexion FTP avec FileZilla ou Cyberduck (voir fiche *Connexion FTP / SFTP*).
+
+## Notes
+
+- Le dossier racine des fichiers web est `web/`.
+- Pour les projets PHP/MySQL, activer la base de données séparément (voir fiche *Création d'une base de données MySQL*).
