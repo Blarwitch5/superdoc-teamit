@@ -1,11 +1,12 @@
 import { betterAuth } from 'better-auth'
 import { SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
+import { join } from 'node:path'
 
-const env = (key: string) =>
-  (typeof import.meta !== 'undefined' && import.meta.env?.[key]) ?? process.env[key]
+const env = (key: string) => process.env[key]
 
-const sqlite = new Database('./auth.db')
+const dbPath = join(process.cwd(), 'auth.db')
+const sqlite = new Database(dbPath)
 
 export const auth = betterAuth({
   database: {
