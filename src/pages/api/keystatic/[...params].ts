@@ -69,31 +69,6 @@ function injectAuthorIntoFrontmatter(
   return `---${frontmatter}${body}`
 }
 
-/**
- * If the addition path has no category prefix (e.g. src/content/docs/mon-process.mdx),
- * read the category from the frontmatter and rewrite to src/content/docs/{category}/mon-process.mdx.
- */
-function fixCategoryPath(addition: { path: string; contents: string }): { path: string; contents: string } {
-  if (!/\.(md|mdx|mdoc)$/.test(addition.path)) return addition
-  const docsMatch = /^src\/content\/docs\/(.+)$/.exec(addition.path)
-  if (!docsMatch) return addition
-  const segments = docsMatch[1].split('/')
-  if (segments.length >= 2) return addition // already has category prefix
-
-  try {
-    const fileContent = base64UrlToUtf8(addition.contents)
-    const categoryMatch = /^category:\s*(.+)$/m.exec(fileContent)
-    if (!categoryMatch) return addition
-    const category = categoryMatch[1].trim().replace(/^["']|["']$/g, '').toLowerCase().replace(/\s+/g, '-')
-    if (!category) return addition
-    const ext = (addition.path.match(/\.(md|mdx|mdoc)$/) ?? ['.mdx'])[0]
-    const slug = segments[0].replace(/\.(md|mdx|mdoc)$/, '')
-    return { ...addition, path: `src/content/docs/${category}/${slug}${ext}` }
-  } catch {
-    return addition
-  }
-}
-
 export const ALL: APIRoute = async (context) => {
   const { request } = context
   const pathname = new URL(request.url).pathname
@@ -118,15 +93,13 @@ export const ALL: APIRoute = async (context) => {
 
           const enrichedAdditions = body.additions.map((addition) => {
             if (!/\.(md|mdx|mdoc)$/.test(addition.path)) return addition
-
-            const fixed = fixCategoryPath(addition)
             try {
-              const fileContent = base64UrlToUtf8(fixed.contents)
-              const { createdBy: existingCreatedBy, createdAt: existingCreatedAt } = readExistingAuthor(fixed.path)
+              const fileContent = base64UrlToUtf8(addition.contents)
+              const { createdBy: existingCreatedBy, createdAt: existingCreatedAt } = readExistingAuthor(addition.path)
               const modified = injectAuthorIntoFrontmatter(fileContent, userName, today, existingCreatedBy, existingCreatedAt)
-              return { ...fixed, contents: utf8ToBase64Url(modified) }
+              return { ...addition, contents: utf8ToBase64Url(modified) }
             } catch {
-              return fixed
+              return addition
             }
           })
 

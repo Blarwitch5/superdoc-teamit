@@ -1,25 +1,18 @@
 import { config, fields, collection } from '@keystatic/core'
 
 function BrandMark(_props: { colorScheme: 'light' | 'dark' }) {
-  return (
-    <a
-      href="/"
-      title="Retour à la documentation"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        fontSize: 12,
-        color: 'inherit',
-        opacity: 0.6,
-        textDecoration: 'none',
-        padding: '2px 6px',
-        border: '1px solid currentColor',
-        borderRadius: 4,
-      }}
-    >
-      ← Docs
-    </a>
-  )
+  const linkStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 12,
+    color: 'inherit',
+    opacity: 0.6,
+    textDecoration: 'none',
+    padding: '2px 6px',
+    border: '1px solid currentColor',
+    borderRadius: 4,
+  }
+  return <a href="/admin" title="Retour à l'administration" style={linkStyle}>← Admin</a>
 }
 
 export default config({
@@ -40,8 +33,8 @@ export default config({
         title: fields.slug({
           name: { label: 'Titre' },
           slug: {
-            label: 'Identifiant (slug)',
-            description: 'Identifiant unique de la fiche — ex : deploiement-npm ou reset-mdp. La catégorie est ajoutée automatiquement au chemin lors de la sauvegarde.'
+            label: 'Chemin (catégorie/identifiant)',
+            description: 'Doit commencer par la catégorie — ex : web/deploiement-npm · serveur/reset-mdp · test/ma-fiche',
           }
         }),
         description: fields.text({
@@ -49,9 +42,9 @@ export default config({
           description: 'Résumé court affiché dans la sidebar.'
         }),
         category: fields.text({
-          label: 'Catégorie',
-          description: 'En minuscules, sans espaces ni accents — ex : web, serveur, administratif. Crée automatiquement une nouvelle section dans la sidebar si elle n\'existe pas encore.',
-          validation: { isRequired: true, length: { min: 1 } },
+          label: 'Catégorie (legacy)',
+          description: 'Valeur héritée — le chemin du slug fait foi. Laisser vide pour les nouvelles fiches.',
+          validation: { isRequired: false },
         }),
         subcategory: fields.text({
           label: 'Sous-catégorie',
