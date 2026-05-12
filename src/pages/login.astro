@@ -1,5 +1,7 @@
 ---
 import { auth } from '../lib/auth'
+import ThemeSwitcher from '../components/ThemeSwitcher.astro'
+import ThemeInitScript from '../components/ThemeInitScript.astro'
 
 if (Astro.locals.user) {
   return Astro.redirect('/')
@@ -39,55 +41,163 @@ if (Astro.request.method === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Connexion — Documentation Team IT</title>
+  <ThemeInitScript />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #1c1c1c;
+      --surface:      #272727;
+      --surface-hover:#2f2f2f;
+      --border:       #3a3a3a;
+      --text:         #f0f0f0;
+      --muted:        #888;
+      --subtle:       #555;
+      --input-bg:     #1c1c1c;
+      --input-border: #3d3d3d;
+      --accent:       #df3123;
+      --accent-hover: #c42b1e;
+    }
+
+    [data-theme="light"] {
+      --bg:           #f2f2f2;
+      --surface:      #ffffff;
+      --surface-hover:#f5f5f5;
+      --border:       #e0e0e0;
+      --text:         #1a1a1a;
+      --muted:        #666;
+      --subtle:       #aaa;
+      --input-bg:     #fafafa;
+      --input-border: #d0d0d0;
+    }
+
     body {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #0f172a;
-      font-family: system-ui, sans-serif;
-      color: #f1f5f9;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      transition: background 0.2s, color 0.2s;
     }
+
+    .theme-corner {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+    }
+
     .card {
       width: 100%;
-      max-width: 360px;
-      padding: 2rem;
-      background: #1e293b;
-      border: 1px solid #334155;
+      max-width: 380px;
+      padding: 2.5rem 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 0.75rem;
     }
-    h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
-    .error { color: #f87171; font-size: 0.875rem; margin-bottom: 1rem; }
-    form { display: flex; flex-direction: column; gap: 1rem; }
-    label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; color: #94a3b8; }
-    input {
-      padding: 0.5rem 0.75rem;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 0.375rem;
-      color: #f1f5f9;
-      font-size: 1rem;
+
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
     }
-    input:focus { outline: 2px solid #1a56db; }
-    button {
+
+    .logo {
+      display: block;
+      width: 160px;
+      height: auto;
+      background: #fff;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      margin-top: -1.5rem;
+      margin-bottom: 2rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .error {
+      color: #f87171;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      padding: 0.625rem 0.75rem;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 0.375rem;
+    }
+
+    form { display: flex; flex-direction: column; gap: 1rem; }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    input {
+      padding: 0.5625rem 0.75rem;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 0.375rem;
+      color: var(--text);
+      font-size: 0.9375rem;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(223,49,35,0.15);
+    }
+
+    button[type="submit"] {
       margin-top: 0.5rem;
-      padding: 0.625rem 1rem;
-      background: #1a56db;
+      padding: 0.6875rem 1rem;
+      background: var(--accent);
       color: white;
       border: none;
       border-radius: 0.375rem;
-      font-size: 1rem;
-      font-weight: 500;
+      font-size: 0.9375rem;
+      font-weight: 600;
       cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background 0.15s;
     }
-    button:hover { background: #1e429f; }
+
+    button[type="submit"]:hover { background: var(--accent-hover); }
   </style>
 </head>
 <body>
+
+  <div class="theme-corner">
+    <ThemeSwitcher />
+  </div>
+
   <div class="card">
-    <h1>Documentation Team IT</h1>
+    <div class="logo-wrap">
+      <svg class="logo" viewBox="0 0 1900 800" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:10;" aria-label="Team IT">
+        <g transform="matrix(1.18884,0,0,1.18884,-76.5363,17.3005)">
+          <path d="M195,567.2C195,567.2 267.2,632.4 424.9,628.4C424.9,628.4 330.7,219.1 567.9,9C567.9,9 430.3,112.7 315.8,295.1C267.3,372.4 223,463.6 195,567.2Z" style="fill:rgb(223,49,35);stroke:rgb(223,49,35);stroke-width:1px;fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(1.18884,0,0,1.18884,-76.5363,17.3005)">
+          <path d="M615.6,563.4C615.6,563.4 516.2,651.8 332,622.3C332,622.3 512.6,312.2 240,113.8C240,113.8 338.7,167.6 446.9,294.2C505,362.1 565.7,450.9 615.6,563.4Z" style="fill:rgb(27,27,24);stroke:rgb(27,27,24);stroke-width:1px;fill-rule:nonzero;"/>
+        </g>
+        <text x="710" y="510" font-family="system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="290" letter-spacing="-6">
+          <tspan fill="rgb(27,27,24)">Team </tspan><tspan fill="rgb(223,49,35)">IT</tspan>
+        </text>
+      </svg>
+    </div>
+    <p class="subtitle">Documentation</p>
     {loginError && <p class="error">{loginError}</p>}
     <form method="POST">
       <label>
@@ -101,5 +211,6 @@ if (Astro.request.method === 'POST') {
       <button type="submit">Se connecter</button>
     </form>
   </div>
+
 </body>
 </html>
