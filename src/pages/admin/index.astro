@@ -1,327 +1,64 @@
 ---
-import { readdirSync, statSync, readFileSync } from 'node:fs'
 import { join, basename } from 'node:path'
-import ThemeInitScript from '../../components/ThemeInitScript.astro'
+import { readFileSync, readdirSync } from 'node:fs'
+import AppLayout from '../../layouts/AppLayout.astro'
 import ThemeSwitcher from '../../components/ThemeSwitcher.astro'
+import TeamItLogo from '../../components/TeamItLogo.astro'
+import { parseFrontmatter, readOrder, getCategoryDirs, DOCS_PATH } from '../../lib/content'
 
 const user = Astro.locals.user!
-
-function parseFrontmatter(content: string): Record<string, string> {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)
-  if (!match) return {}
-  const fm: Record<string, string> = {}
-  for (const line of match[1].split(/\r?\n/)) {
-    const idx = line.indexOf(':')
-    if (idx === -1) continue
-    const key = line.slice(0, idx).trim()
-    const val = line.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '')
-    fm[key] = val
-  }
-  return fm
-}
-
-const docsPath = join(process.cwd(), 'src/content/docs')
-
-let savedOrder: { categories: string[]; fiches: Record<string, string[]> } = { categories: [], fiches: {} }
-try { savedOrder = JSON.parse(readFileSync(join(docsPath, '_order.json'), 'utf-8')) } catch {}
+const savedOrder = readOrder()
 
 type Fiche    = { slug: string; title: string; description: string; modifiedAt: string; id: string }
 type Category = { dir: string; label: string; fiches: Fiche[] }
 
 const categories: Category[] = []
 
-try {
-  const allDirs = readdirSync(docsPath)
-    .filter(name => {
-      try { return statSync(join(docsPath, name)).isDirectory() && !name.startsWith('.') }
-      catch { return false }
-    })
+for (const dir of getCategoryDirs(savedOrder)) {
+  const dirPath = join(DOCS_PATH, dir)
 
-  const orderedDirs = [
-    ...savedOrder.categories.filter(d => allDirs.includes(d)),
-    ...allDirs.filter(d => !savedOrder.categories.includes(d)).sort(),
+  // Read label from category index.mdx frontmatter
+  let label = dir.charAt(0).toUpperCase() + dir.slice(1)
+  try {
+    const fm = parseFrontmatter(readFileSync(join(dirPath, 'index.mdx'), 'utf-8'))
+    if (fm.title) label = fm.title
+  } catch {}
+
+  // List fiches, excluding the category index page
+  let rawFiles: string[] = []
+  try {
+    rawFiles = readdirSync(dirPath)
+      .filter(f => /\.(mdx|md|mdoc)$/.test(f) && !/^index\.(mdx|md|mdoc)$/.test(f))
+  } catch {}
+
+  const ficheOrder = savedOrder.fiches[dir] ?? []
+  const orderedFiles = [
+    ...ficheOrder.map(s => rawFiles.find(f => f.replace(/\.(mdx|md|mdoc)$/, '') === s)).filter(Boolean) as string[],
+    ...rawFiles.filter(f => !ficheOrder.includes(f.replace(/\.(mdx|md|mdoc)$/, ''))).sort(),
   ]
 
-  for (const dir of orderedDirs) {
-    const indexPath = join(docsPath, dir, 'index.mdx')
-    let label = dir.charAt(0).toUpperCase() + dir.slice(1)
+  const fiches: Fiche[] = orderedFiles.map(file => {
+    const slug = basename(file).replace(/\.(mdx|md|mdoc)$/, '')
     try {
-      const fm = parseFrontmatter(readFileSync(indexPath, 'utf-8'))
-      if (fm.title) label = fm.title
-    } catch {}
-
-    const dirPath = join(docsPath, dir)
-    let rawFiles: string[] = []
-    try {
-      rawFiles = readdirSync(dirPath)
-        .filter(f => /\.(mdx|md|mdoc)$/.test(f) && !/^index\.(mdx|md|mdoc)$/.test(f))
-    } catch {}
-
-    const ficheOrder = savedOrder.fiches[dir] ?? []
-    const orderedFiles = [
-      ...ficheOrder.map(s => rawFiles.find(f => f.replace(/\.(mdx|md|mdoc)$/, '') === s)).filter(Boolean) as string[],
-      ...rawFiles.filter(f => !ficheOrder.includes(f.replace(/\.(mdx|md|mdoc)$/, ''))).sort(),
-    ]
-
-    const fiches: Fiche[] = []
-    for (const file of orderedFiles) {
-      const slug = basename(file).replace(/\.(mdx|md|mdoc)$/, '')
-      try {
-        const fm = parseFrontmatter(readFileSync(join(dirPath, file), 'utf-8'))
-        fiches.push({ slug, title: fm.title || slug, description: fm.description || '', modifiedAt: fm.modifiedAt || fm.createdAt || '', id: `${dir}/${slug}` })
-      } catch {
-        fiches.push({ slug, title: slug, description: '', modifiedAt: '', id: `${dir}/${slug}` })
-      }
+      const fm = parseFrontmatter(readFileSync(join(dirPath, file), 'utf-8'))
+      return { slug, title: fm.title || slug, description: fm.description || '', modifiedAt: fm.modifiedAt || fm.createdAt || '', id: `${dir}/${slug}` }
+    } catch {
+      return { slug, title: slug, description: '', modifiedAt: '', id: `${dir}/${slug}` }
     }
+  })
 
-    categories.push({ dir, label, fiches })
-  }
-} catch {}
+  categories.push({ dir, label, fiches })
+}
 
 const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
 ---
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Administration — Documentation Team IT</title>
-  <ThemeInitScript />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:           #1c1c1c;
-      --surface:      #272727;
-      --surface-hover:#2f2f2f;
-      --border:       #3a3a3a;
-      --border-subtle:#303030;
-      --text:         #f0f0f0;
-      --muted:        #888;
-      --subtle:       #555;
-      --input-bg:     #1c1c1c;
-      --input-border: #3d3d3d;
-      --accent:       #df3123;
-      --accent-hover: #c42b1e;
-    }
-    [data-theme="light"] {
-      --bg:           #f2f2f2;
-      --surface:      #ffffff;
-      --surface-hover:#f5f5f5;
-      --border:       #ececec;
-      --border-subtle:#f2f2f2;
-      --text:         #1a1a1a;
-      --muted:        #666;
-      --subtle:       #bbb;
-      --input-bg:     #fafafa;
-      --input-border: #d0d0d0;
-    }
-
-    body {
-      min-height: 100vh;
-      background: var(--bg);
-      font-family: system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
-      color: var(--text);
-      transition: background 0.2s, color 0.2s;
-    }
-
-    /* ── Header ── */
-    header {
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 0 2rem; height: 56px;
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-    }
-    .header-left { display: flex; align-items: center; gap: 1rem; }
-    .logo { height: 28px; width: auto; background: #fff; border-radius: 4px; padding: 2px 6px; }
-    .header-title { font-size: 0.8125rem; color: var(--muted); border-left: 1px solid var(--border); padding-left: 1rem; }
-    .header-right { display: flex; align-items: center; gap: 0.75rem; }
-    .user-info { font-size: 0.8125rem; color: var(--muted); }
-
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.4rem 0.875rem; border-radius: 0.375rem;
-      font-size: 0.8125rem; font-weight: 500;
-      text-decoration: none; cursor: pointer; border: none;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
-    .btn-logout {
-      font-size: 0.8125rem; color: var(--subtle);
-      text-decoration: none; transition: color 0.15s;
-    }
-    .btn-logout:hover { color: var(--muted); }
-    .btn-secondary { background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--muted); }
-
-    /* ── Main ── */
-    main { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; }
-
-    .page-header {
-      display: flex; align-items: flex-end; justify-content: space-between;
-      margin-bottom: 2rem; gap: 1rem;
-    }
-    .page-title { font-size: 1.25rem; font-weight: 700; }
-    .page-meta { font-size: 0.8125rem; color: var(--muted); margin-top: 0.25rem; }
-    .page-actions { display: flex; gap: 0.5rem; }
-
-    /* ── Add category form ── */
-    #add-category-form {
-      display: none; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 0.5rem;
-      padding: 1.25rem; margin-bottom: 1.25rem;
-      gap: 0.75rem; flex-direction: column;
-    }
-    #add-category-form.visible { display: flex; }
-    .form-row { display: flex; gap: 0.75rem; align-items: flex-end; }
-    .form-field { display: flex; flex-direction: column; gap: 0.375rem; flex: 1; }
-    .form-field label { font-size: 0.8rem; color: var(--muted); }
-    .form-field input {
-      padding: 0.5rem 0.75rem; background: var(--input-bg);
-      border: 1px solid var(--input-border); border-radius: 0.375rem;
-      color: var(--text); font-size: 0.875rem;
-    }
-    .form-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(223,49,35,0.15); }
-    .form-hint { font-size: 0.75rem; color: var(--subtle); }
-    .form-error { font-size: 0.8rem; color: #f87171; display: none; }
-    .form-error.visible { display: block; }
-
-    /* ── Drag handle ── */
-    .drag-handle {
-      display: flex; align-items: center; justify-content: center;
-      width: 20px; height: 20px; flex-shrink: 0;
-      color: var(--subtle); cursor: grab; border-radius: 3px;
-      opacity: 0.25; transition: opacity 0.15s, color 0.15s;
-    }
-    .drag-handle:active { cursor: grabbing; }
-
-    /* ── Accordion ── */
-    .accordion { display: flex; flex-direction: column; gap: 0.75rem; }
-
-    details {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 0.5rem; overflow: hidden;
-    }
-    details[open] { border-color: var(--border); }
-    details:hover > summary .drag-handle { opacity: 0.7; }
-    details > summary:hover .drag-handle,
-    details > summary .drag-handle:hover { opacity: 1; }
-
-    /* Drag states */
-    details.is-dragging { opacity: 0.4; }
-    details.drag-over-top    { box-shadow: 0 -3px 0 var(--accent); }
-    details.drag-over-bottom { box-shadow: 0 3px 0 var(--accent); }
-
-    summary {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.875rem 1rem 0.875rem 0.5rem;
-      cursor: pointer; user-select: none; list-style: none; gap: 0.5rem;
-    }
-    summary::-webkit-details-marker { display: none; }
-    summary:hover { background: var(--surface-hover); }
-
-    .summary-left { display: flex; align-items: center; gap: 0.5rem; }
-    .category-label { font-weight: 600; font-size: 0.9375rem; }
-    .category-count {
-      font-size: 0.75rem; color: var(--muted);
-      background: var(--border); padding: 0.15rem 0.5rem; border-radius: 999px;
-    }
-    .summary-right { display: flex; align-items: center; gap: 0.75rem; }
-
-    .chevron { color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
-    details[open] .chevron { transform: rotate(180deg); }
-
-    .btn-delete-cat {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 26px; height: 26px; border-radius: 0.25rem;
-      border: 1px solid transparent; background: transparent;
-      color: var(--subtle); cursor: pointer;
-      transition: color 0.15s, border-color 0.15s, background 0.15s;
-    }
-    .btn-delete-cat:hover { color: #f87171; border-color: #f87171; background: rgba(248,113,113,0.08); }
-    .btn-delete-cat:disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
-
-    /* ── Fiche list ── */
-    .fiches-list { border-top: 1px solid var(--border-subtle); }
-
-    .fiche-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.625rem 1rem 0.625rem 0.5rem; gap: 0.75rem;
-      border-bottom: 1px solid var(--border-subtle);
-      cursor: default;
-    }
-    .fiche-item:last-child { border-bottom: none; }
-    .fiche-item:hover { background: var(--surface-hover); }
-    .fiche-item:hover .drag-handle { opacity: 0.8; }
-
-    .fiche-item.is-dragging { opacity: 0.4; }
-    .fiche-item.drag-over-top    { box-shadow: 0 -2px 0 var(--accent); }
-    .fiche-item.drag-over-bottom { box-shadow: 0 2px 0 var(--accent); }
-
-    .fiche-info { flex: 1; min-width: 0; }
-    .fiche-title { font-size: 0.875rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .fiche-description { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .fiche-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
-    .fiche-date { font-size: 0.75rem; color: var(--subtle); }
-
-    .btn-edit {
-      font-size: 0.75rem; padding: 0.25rem 0.625rem;
-      border-radius: 0.25rem; text-decoration: none;
-      color: var(--muted); border: 1px solid var(--border);
-      transition: color 0.15s, border-color 0.15s; white-space: nowrap;
-    }
-    .btn-edit:hover { color: var(--accent); border-color: var(--accent); }
-    .btn-view {
-      font-size: 0.75rem; padding: 0.25rem 0.625rem;
-      border-radius: 0.25rem; text-decoration: none;
-      color: var(--muted); border: 1px solid transparent;
-      transition: color 0.15s, border-color 0.15s; white-space: nowrap;
-    }
-    .btn-view:hover { color: var(--text); border-color: var(--border); }
-
-    .new-fiche-row { padding: 0.5rem 1rem; border-top: 1px solid var(--border-subtle); }
-    .btn-new-fiche {
-      font-size: 0.8rem; color: var(--subtle); text-decoration: none;
-      display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.15s;
-    }
-    .btn-new-fiche:hover { color: var(--accent); }
-
-    .empty { padding: 1.25rem 1rem; font-size: 0.875rem; color: var(--subtle); border-top: 1px solid var(--border-subtle); }
-    .empty a { color: var(--accent); text-decoration: none; }
-
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-      background: var(--surface); color: var(--text);
-      padding: 0.625rem 1.25rem; border-radius: 0.375rem;
-      font-size: 0.875rem; border: 1px solid var(--border);
-      opacity: 0; pointer-events: none; transition: opacity 0.2s;
-      white-space: nowrap; z-index: 100;
-    }
-    #toast.show { opacity: 1; }
-    #toast.error { border-color: #f87171; color: #f87171; }
-  </style>
-</head>
-<body>
-
+<AppLayout title="Administration — Documentation Team IT">
   <header>
     <div class="header-left">
-      <svg class="logo" viewBox="0 0 1900 800" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;" aria-label="Team IT">
-        <g transform="matrix(1.18884,0,0,1.18884,-76.5363,17.3005)">
-          <path d="M195,567.2C195,567.2 267.2,632.4 424.9,628.4C424.9,628.4 330.7,219.1 567.9,9C567.9,9 430.3,112.7 315.8,295.1C267.3,372.4 223,463.6 195,567.2Z" style="fill:rgb(223,49,35);stroke:rgb(223,49,35);stroke-width:1px;fill-rule:nonzero;"/>
-        </g>
-        <g transform="matrix(1.18884,0,0,1.18884,-76.5363,17.3005)">
-          <path d="M615.6,563.4C615.6,563.4 516.2,651.8 332,622.3C332,622.3 512.6,312.2 240,113.8C240,113.8 338.7,167.6 446.9,294.2C505,362.1 565.7,450.9 615.6,563.4Z" style="fill:rgb(27,27,24);stroke:rgb(27,27,24);stroke-width:1px;fill-rule:nonzero;"/>
-        </g>
-        <text x="710" y="510" font-family="system-ui" font-weight="700" font-size="290" letter-spacing="-6">
-          <tspan fill="rgb(27,27,24)">Team </tspan><tspan fill="rgb(223,49,35)">IT</tspan>
-        </text>
-      </svg>
+      <div class="logo-bg">
+        <TeamItLogo height={24} aria-hidden />
+      </div>
       <span class="header-title">Administration</span>
     </div>
     <div class="header-right">
@@ -363,7 +100,6 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
       </div>
     </div>
 
-    <!-- Drag handle icon SVG -->
     <template id="grip-icon">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
@@ -392,11 +128,11 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
                 disabled={cat.fiches.length > 0}
                 aria-label={`Supprimer ${cat.label}`}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
                 </svg>
               </button>
-              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </div>
@@ -413,7 +149,7 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
                   </div>
                   <div class="fiche-actions">
                     {fiche.modifiedAt && <span class="fiche-date">{fiche.modifiedAt}</span>}
-                    <a href={`/${cat.dir}/${fiche.slug}/`} class="btn-view" target="_blank">Voir</a>
+                    <a href={`/${cat.dir}/${fiche.slug}/`} class="btn-view" target="_blank" rel="noopener">Voir</a>
                     <a href={`/keystatic/collection/fiches/item/${encodeURIComponent(fiche.id)}`} class="btn-edit">Modifier</a>
                   </div>
                 </div>
@@ -432,226 +168,404 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
     </div>
   </main>
 
-  <div id="toast"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+</AppLayout>
 
-  <script>
-    // ── Inject grip icons ──────────────────────────────────────────
-    const grip = (document.getElementById('grip-icon') as HTMLTemplateElement).content
-    document.querySelectorAll('.drag-handle').forEach(el => {
-      el.appendChild(grip.cloneNode(true))
-    })
+<style>
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+  .logo-bg { background: #fff; border-radius: 4px; padding: 3px 6px; line-height: 0; }
+  .header-title { font-size: 0.8125rem; color: var(--muted); border-left: 1px solid var(--border); padding-left: 1rem; }
+  .header-right { display: flex; align-items: center; gap: 0.75rem; }
+  .user-info { font-size: 0.8125rem; color: var(--muted); }
 
-    // ── Toast ──────────────────────────────────────────────────────
-    function toast(msg: string, isError = false) {
-      const el = document.getElementById('toast')!
-      el.textContent = msg
-      el.className = isError ? 'error show' : 'show'
-      setTimeout(() => { el.className = isError ? 'error' : '' }, 2500)
-    }
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 0.875rem; border-radius: 0.375rem;
+    font-size: 0.8125rem; font-weight: 500;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-secondary { background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--muted); }
+  .btn-logout { font-size: 0.8125rem; color: var(--subtle); text-decoration: none; transition: color 0.15s; }
+  .btn-logout:hover { color: var(--muted); }
 
-    // ── Save order to API ──────────────────────────────────────────
-    async function saveOrder() {
-      const accordion = document.getElementById('accordion')!
-      const cats = [...accordion.querySelectorAll<HTMLElement>('details[data-cat]')]
-      const categories = cats.map(el => el.dataset.cat!)
-      const fiches: Record<string, string[]> = {}
-      for (const el of cats) {
-        const cat = el.dataset.cat!
-        fiches[cat] = [...el.querySelectorAll<HTMLElement>('.fiche-item[data-fiche]')].map(f => f.dataset.fiche!)
-      }
-      try {
-        const res = await fetch('/api/admin/order', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ categories, fiches })
-        })
-        if (!res.ok) toast('Erreur lors de la sauvegarde', true)
-      } catch {
-        toast('Erreur réseau', true)
-      }
-    }
+  /* ── Main ── */
+  main { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; }
 
-    // ── Category drag & drop ───────────────────────────────────────
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 2rem; gap: 1rem;
+  }
+  .page-title { font-size: 1.25rem; font-weight: 700; }
+  .page-meta { font-size: 0.8125rem; color: var(--muted); margin-top: 0.25rem; }
+  .page-actions { display: flex; gap: 0.5rem; }
+
+  /* ── Add category form ── */
+  #add-category-form {
+    display: none; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 0.5rem;
+    padding: 1.25rem; margin-bottom: 1.25rem;
+    gap: 0.75rem; flex-direction: column;
+  }
+  #add-category-form.visible { display: flex; }
+  .form-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+  .form-field { display: flex; flex-direction: column; gap: 0.375rem; flex: 1; }
+  .form-field label { font-size: 0.8rem; color: var(--muted); }
+  .form-field input {
+    padding: 0.5rem 0.75rem; background: var(--input-bg);
+    border: 1px solid var(--input-border); border-radius: 0.375rem;
+    color: var(--text); font-size: 0.875rem;
+  }
+  .form-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(223,49,35,0.15); }
+  .form-hint { font-size: 0.75rem; color: var(--subtle); }
+  .form-error { font-size: 0.8rem; color: #f87171; display: none; }
+  .form-error.visible { display: block; }
+
+  /* ── Drag handle ── */
+  .drag-handle {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; flex-shrink: 0;
+    color: var(--subtle); cursor: grab; border-radius: 3px;
+    opacity: 0.25; transition: opacity 0.15s, color 0.15s;
+  }
+  .drag-handle:active { cursor: grabbing; }
+
+  /* ── Accordion ── */
+  .accordion { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  details {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.5rem; overflow: hidden;
+  }
+  details:hover > summary .drag-handle { opacity: 0.7; }
+  details > summary:hover .drag-handle,
+  details > summary .drag-handle:hover { opacity: 1; }
+
+  details.is-dragging { opacity: 0.4; }
+  details.drag-over-top    { box-shadow: 0 -3px 0 var(--accent); }
+  details.drag-over-bottom { box-shadow: 0 3px 0 var(--accent); }
+
+  summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.875rem 1rem 0.875rem 0.5rem;
+    cursor: pointer; user-select: none; list-style: none; gap: 0.5rem;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { background: var(--surface-hover); }
+
+  .summary-left { display: flex; align-items: center; gap: 0.5rem; }
+  .category-label { font-weight: 600; font-size: 0.9375rem; }
+  .category-count {
+    font-size: 0.75rem; color: var(--muted);
+    background: var(--border); padding: 0.15rem 0.5rem; border-radius: 999px;
+  }
+  .summary-right { display: flex; align-items: center; gap: 0.75rem; }
+
+  .chevron { color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+  details[open] .chevron { transform: rotate(180deg); }
+
+  .btn-delete-cat {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 0.25rem;
+    border: 1px solid transparent; background: transparent;
+    color: var(--subtle); cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .btn-delete-cat:hover { color: #f87171; border-color: #f87171; background: rgba(248,113,113,0.08); }
+  .btn-delete-cat:disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+
+  /* ── Fiche list ── */
+  .fiches-list { border-top: 1px solid var(--border-subtle); }
+
+  .fiche-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.625rem 1rem 0.625rem 0.5rem; gap: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: default;
+  }
+  .fiche-item:last-child { border-bottom: none; }
+  .fiche-item:hover { background: var(--surface-hover); }
+  .fiche-item:hover .drag-handle { opacity: 0.8; }
+
+  .fiche-item.is-dragging { opacity: 0.4; }
+  .fiche-item.drag-over-top    { box-shadow: 0 -2px 0 var(--accent); }
+  .fiche-item.drag-over-bottom { box-shadow: 0 2px 0 var(--accent); }
+
+  .fiche-info { flex: 1; min-width: 0; }
+  .fiche-title { font-size: 0.875rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fiche-description { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .fiche-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .fiche-date { font-size: 0.75rem; color: var(--subtle); }
+
+  .btn-edit {
+    font-size: 0.75rem; padding: 0.25rem 0.625rem;
+    border-radius: 0.25rem; text-decoration: none;
+    color: var(--muted); border: 1px solid var(--border);
+    transition: color 0.15s, border-color 0.15s; white-space: nowrap;
+  }
+  .btn-edit:hover { color: var(--accent); border-color: var(--accent); }
+  .btn-view {
+    font-size: 0.75rem; padding: 0.25rem 0.625rem;
+    border-radius: 0.25rem; text-decoration: none;
+    color: var(--muted); border: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s; white-space: nowrap;
+  }
+  .btn-view:hover { color: var(--text); border-color: var(--border); }
+
+  .new-fiche-row { padding: 0.5rem 1rem; border-top: 1px solid var(--border-subtle); }
+  .btn-new-fiche {
+    font-size: 0.8rem; color: var(--subtle); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.15s;
+  }
+  .btn-new-fiche:hover { color: var(--accent); }
+
+  .empty { padding: 1.25rem 1rem; font-size: 0.875rem; color: var(--subtle); border-top: 1px solid var(--border-subtle); }
+  .empty a { color: var(--accent); text-decoration: none; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    background: var(--surface); color: var(--text);
+    padding: 0.625rem 1.25rem; border-radius: 0.375rem;
+    font-size: 0.875rem; border: 1px solid var(--border);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    white-space: nowrap; z-index: 100;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { border-color: #f87171; color: #f87171; }
+</style>
+
+<script>
+  // ── Inject grip icons ──────────────────────────────────────────────
+  const grip = (document.getElementById('grip-icon') as HTMLTemplateElement).content
+  document.querySelectorAll('.drag-handle').forEach(el => {
+    el.appendChild(grip.cloneNode(true))
+  })
+
+  // ── Toast ────────────────────────────────────────────────────────
+  function toast(msg: string, isError = false) {
+    const el = document.getElementById('toast')!
+    el.textContent = msg
+    el.className = isError ? 'error show' : 'show'
+    setTimeout(() => { el.className = isError ? 'error' : '' }, 2500)
+  }
+
+  // ── Save order ───────────────────────────────────────────────────
+  async function saveOrder() {
     const accordion = document.getElementById('accordion')!
-    let catDragEl: HTMLElement | null = null
-
-    document.querySelectorAll<HTMLElement>('.cat-drag-handle').forEach(handle => {
-      const details = handle.closest<HTMLElement>('details')!
-
-      // Enable dragging only while the handle is held
-      handle.addEventListener('mousedown', (e) => {
-        e.stopPropagation()       // don't toggle accordion
-        details.draggable = true
+    const cats = [...accordion.querySelectorAll<HTMLElement>('details[data-cat]')]
+    const categories = cats.map(el => el.dataset.cat!)
+    const fiches: Record<string, string[]> = {}
+    for (const el of cats) {
+      const cat = el.dataset.cat!
+      fiches[cat] = [...el.querySelectorAll<HTMLElement>('.fiche-item[data-fiche]')].map(f => f.dataset.fiche!)
+    }
+    try {
+      const res = await fetch('/api/admin/order', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categories, fiches }),
       })
-      window.addEventListener('mouseup', () => {
-        if (catDragEl !== details) details.draggable = false
-      }, { once: false })
+      if (!res.ok) toast('Erreur lors de la sauvegarde', true)
+    } catch {
+      toast('Erreur réseau', true)
+    }
+  }
+
+  // ── Category drag & drop ─────────────────────────────────────────
+  const accordion = document.getElementById('accordion')!
+  let catDragEl: HTMLElement | null = null
+
+  document.querySelectorAll<HTMLElement>('.cat-drag-handle').forEach(handle => {
+    const details = handle.closest<HTMLElement>('details')!
+    handle.addEventListener('mousedown', (e) => {
+      e.stopPropagation()
+      details.draggable = true
+    })
+    window.addEventListener('mouseup', () => {
+      if (catDragEl !== details) details.draggable = false
+    })
+  })
+
+  accordion.addEventListener('dragstart', (e) => {
+    const details = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
+    if (!details || !details.draggable) return
+    catDragEl = details
+    details.classList.add('is-dragging')
+    e.dataTransfer!.effectAllowed = 'move'
+    e.dataTransfer!.setData('text/plain', 'cat')
+    details.removeAttribute('open')
+  }, true)
+
+  accordion.addEventListener('dragend', (e) => {
+    const details = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
+    if (!details) return
+    details.classList.remove('is-dragging')
+    details.draggable = false
+    details.setAttribute('open', '')
+    document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+      el.classList.remove('drag-over-top', 'drag-over-bottom')
+    })
+    catDragEl = null
+    saveOrder()
+  }, true)
+
+  accordion.addEventListener('dragover', (e) => {
+    if (!catDragEl) return
+    const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
+    if (!target || target === catDragEl) return
+    e.preventDefault()
+    e.dataTransfer!.dropEffect = 'move'
+    const rect = target.getBoundingClientRect()
+    const before = e.clientY < rect.top + rect.height / 2
+    target.classList.toggle('drag-over-top', before)
+    target.classList.toggle('drag-over-bottom', !before)
+  })
+
+  accordion.addEventListener('dragleave', (e) => {
+    const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
+    if (target && !target.contains(e.relatedTarget as Node)) {
+      target.classList.remove('drag-over-top', 'drag-over-bottom')
+    }
+  })
+
+  accordion.addEventListener('drop', (e) => {
+    if (!catDragEl) return
+    const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
+    if (!target || target === catDragEl) return
+    e.preventDefault()
+    const before = e.clientY < target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2
+    accordion.insertBefore(catDragEl, before ? target : target.nextSibling)
+    target.classList.remove('drag-over-top', 'drag-over-bottom')
+  })
+
+  // ── Fiche drag & drop (same category only) ──────────────────────
+  let ficheDragEl: HTMLElement | null = null
+
+  document.querySelectorAll<HTMLElement>('.fiche-item').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      ficheDragEl = item
+      item.classList.add('is-dragging')
+      e.dataTransfer!.effectAllowed = 'move'
+      e.dataTransfer!.setData('text/plain', 'fiche')
+      e.stopPropagation()
     })
 
-    accordion.addEventListener('dragstart', (e) => {
-      const details = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
-      if (!details || !details.draggable) return
-      catDragEl = details
-      details.classList.add('is-dragging')
-      e.dataTransfer!.effectAllowed = 'move'
-      e.dataTransfer!.setData('text/plain', 'cat')
-      // Close during drag for cleaner visuals
-      details.removeAttribute('open')
-    }, true)
-
-    accordion.addEventListener('dragend', (e) => {
-      const details = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
-      if (!details) return
-      details.classList.remove('is-dragging')
-      details.draggable = false
-      details.setAttribute('open', '')
-      document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+    item.addEventListener('dragend', () => {
+      item.classList.remove('is-dragging')
+      document.querySelectorAll('.fiche-item.drag-over-top, .fiche-item.drag-over-bottom').forEach(el => {
         el.classList.remove('drag-over-top', 'drag-over-bottom')
       })
-      catDragEl = null
+      ficheDragEl = null
       saveOrder()
-    }, true)
-
-    accordion.addEventListener('dragover', (e) => {
-      if (!catDragEl) return
-      const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
-      if (!target || target === catDragEl) return
-      e.preventDefault()
-      e.dataTransfer!.dropEffect = 'move'
-      const rect = target.getBoundingClientRect()
-      const before = e.clientY < rect.top + rect.height / 2
-      target.classList.toggle('drag-over-top', before)
-      target.classList.toggle('drag-over-bottom', !before)
     })
 
-    accordion.addEventListener('dragleave', (e) => {
-      const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
-      if (target && !target.contains(e.relatedTarget as Node)) {
-        target.classList.remove('drag-over-top', 'drag-over-bottom')
+    item.addEventListener('dragover', (e) => {
+      if (!ficheDragEl || ficheDragEl === item || ficheDragEl.dataset.cat !== item.dataset.cat) return
+      e.preventDefault()
+      e.stopPropagation()
+      e.dataTransfer!.dropEffect = 'move'
+      const before = e.clientY < item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2
+      item.classList.toggle('drag-over-top', before)
+      item.classList.toggle('drag-over-bottom', !before)
+    })
+
+    item.addEventListener('dragleave', (e) => {
+      if (!item.contains(e.relatedTarget as Node)) {
+        item.classList.remove('drag-over-top', 'drag-over-bottom')
       }
     })
 
-    accordion.addEventListener('drop', (e) => {
-      if (!catDragEl) return
-      const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
-      if (!target || target === catDragEl) return
+    item.addEventListener('drop', (e) => {
+      if (!ficheDragEl || ficheDragEl === item || ficheDragEl.dataset.cat !== item.dataset.cat) return
       e.preventDefault()
-      const rect = target.getBoundingClientRect()
-      const before = e.clientY < rect.top + rect.height / 2
-      accordion.insertBefore(catDragEl, before ? target : target.nextSibling)
-      target.classList.remove('drag-over-top', 'drag-over-bottom')
+      e.stopPropagation()
+      const before = e.clientY < item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2
+      item.parentElement!.insertBefore(ficheDragEl, before ? item : item.nextSibling)
+      item.classList.remove('drag-over-top', 'drag-over-bottom')
     })
+  })
 
-    // ── Fiche drag & drop (within same category) ──────────────────
-    let ficheDragEl: HTMLElement | null = null
+  // ── Add category form ────────────────────────────────────────────
+  const addForm   = document.getElementById('add-category-form')!
+  const toggleBtn = document.getElementById('toggle-add-cat')!
+  const cancelBtn = document.getElementById('cancel-add-cat')!
+  const submitBtn = document.getElementById('submit-add-cat')!
+  const nameInput = document.getElementById('cat-name') as HTMLInputElement
+  const descInput = document.getElementById('cat-desc') as HTMLInputElement
+  const errorEl   = document.getElementById('cat-error')!
 
-    document.querySelectorAll<HTMLElement>('.fiche-item').forEach(item => {
-      item.addEventListener('dragstart', (e) => {
-        // Only start if coming from the handle (or anywhere on the item)
-        ficheDragEl = item
-        item.classList.add('is-dragging')
-        e.dataTransfer!.effectAllowed = 'move'
-        e.dataTransfer!.setData('text/plain', 'fiche')
-        e.stopPropagation() // prevent category drag from firing
-      })
+  function showError(msg: string) {
+    errorEl.textContent = msg
+    errorEl.classList.add('visible')
+  }
 
-      item.addEventListener('dragend', () => {
-        item.classList.remove('is-dragging')
-        document.querySelectorAll('.fiche-item.drag-over-top, .fiche-item.drag-over-bottom').forEach(el => {
-          el.classList.remove('drag-over-top', 'drag-over-bottom')
-        })
-        ficheDragEl = null
-        saveOrder()
-      })
+  toggleBtn.addEventListener('click', () => {
+    addForm.classList.toggle('visible')
+    if (addForm.classList.contains('visible')) nameInput.focus()
+  })
 
-      item.addEventListener('dragover', (e) => {
-        if (!ficheDragEl || ficheDragEl === item) return
-        // Restrict to same category
-        if (ficheDragEl.dataset.cat !== item.dataset.cat) return
-        e.preventDefault()
-        e.stopPropagation()
-        e.dataTransfer!.dropEffect = 'move'
-        const rect = item.getBoundingClientRect()
-        const before = e.clientY < rect.top + rect.height / 2
-        item.classList.toggle('drag-over-top', before)
-        item.classList.toggle('drag-over-bottom', !before)
-      })
+  cancelBtn.addEventListener('click', () => {
+    addForm.classList.remove('visible')
+    nameInput.value = ''
+    descInput.value = ''
+    errorEl.classList.remove('visible')
+  })
 
-      item.addEventListener('dragleave', (e) => {
-        if (!item.contains(e.relatedTarget as Node)) {
-          item.classList.remove('drag-over-top', 'drag-over-bottom')
-        }
-      })
-
-      item.addEventListener('drop', (e) => {
-        if (!ficheDragEl || ficheDragEl === item) return
-        if (ficheDragEl.dataset.cat !== item.dataset.cat) return
-        e.preventDefault()
-        e.stopPropagation()
-        const rect = item.getBoundingClientRect()
-        const before = e.clientY < rect.top + rect.height / 2
-        item.parentElement!.insertBefore(ficheDragEl, before ? item : item.nextSibling)
-        item.classList.remove('drag-over-top', 'drag-over-bottom')
-      })
+  submitBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim()
+    if (!name) { showError('Le nom est requis.'); return }
+    submitBtn.textContent = 'Création…'
+    submitBtn.setAttribute('disabled', '')
+    const res = await fetch('/api/admin/category', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description: descInput.value.trim() }),
     })
+    const data = await res.json()
+    submitBtn.textContent = 'Créer la catégorie'
+    submitBtn.removeAttribute('disabled')
+    if (!res.ok) { showError(data.error ?? 'Erreur inconnue.'); return }
+    toast(`Catégorie « ${data.label} » créée.`)
+    location.reload()
+  })
 
-    // ── Add category form ──────────────────────────────────────────
-    const addForm   = document.getElementById('add-category-form')!
-    const toggleBtn = document.getElementById('toggle-add-cat')!
-    const cancelBtn = document.getElementById('cancel-add-cat')!
-    const submitBtn = document.getElementById('submit-add-cat')!
-    const nameInput = document.getElementById('cat-name') as HTMLInputElement
-    const descInput = document.getElementById('cat-desc') as HTMLInputElement
-    const errorEl   = document.getElementById('cat-error')!
+  nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitBtn.click() })
 
-    toggleBtn.addEventListener('click', () => {
-      addForm.classList.toggle('visible')
-      if (addForm.classList.contains('visible')) nameInput.focus()
-    })
-    cancelBtn.addEventListener('click', () => {
-      addForm.classList.remove('visible')
-      nameInput.value = ''; descInput.value = ''
-      errorEl.classList.remove('visible')
-    })
-
-    submitBtn.addEventListener('click', async () => {
-      const name = nameInput.value.trim()
-      if (!name) { showError('Le nom est requis.'); return }
-      submitBtn.textContent = 'Création…'
-      submitBtn.setAttribute('disabled', '')
+  // ── Delete category ──────────────────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('.btn-delete-cat').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation()
+      const dir = btn.dataset.cat!
+      const label = btn.dataset.label!
+      if (!confirm(`Supprimer la catégorie « ${label} » ?\nCette action est irréversible.`)) return
       const res = await fetch('/api/admin/category', {
-        method: 'POST',
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description: descInput.value.trim() })
+        body: JSON.stringify({ name: dir }),
       })
       const data = await res.json()
-      submitBtn.textContent = 'Créer la catégorie'
-      submitBtn.removeAttribute('disabled')
-      if (!res.ok) { showError(data.error ?? 'Erreur inconnue.'); return }
-      toast(`Catégorie « ${data.label} » créée.`)
+      if (!res.ok) { toast(data.error ?? 'Erreur inconnue.', true); return }
+      toast(`Catégorie « ${label} » supprimée.`)
       location.reload()
     })
-    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitBtn.click() })
-    function showError(msg: string) { errorEl.textContent = msg; errorEl.classList.add('visible') }
-
-    // ── Delete category ────────────────────────────────────────────
-    document.querySelectorAll<HTMLButtonElement>('.btn-delete-cat').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation()
-        const dir = btn.dataset.cat!, label = btn.dataset.label!
-        if (!confirm(`Supprimer la catégorie « ${label} » ?\nCette action est irréversible.`)) return
-        const res = await fetch('/api/admin/category', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: dir })
-        })
-        const data = await res.json()
-        if (!res.ok) { toast(data.error ?? 'Erreur inconnue.', true); return }
-        toast(`Catégorie « ${label} » supprimée.`)
-        location.reload()
-      })
-    })
-  </script>
-
-</body>
-</html>
+  })
+</script>
