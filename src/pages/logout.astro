@@ -1,11 +1,16 @@
 ---
-await fetch(`${Astro.url.origin}/api/auth/sign-out`, {
-  method: 'POST',
-  headers: Astro.request.headers
+import { auth } from '../lib/auth'
+
+const response = await auth.api.signOut({
+  headers: Astro.request.headers,
+  asResponse: true,
 })
-Astro.response.headers.set(
-  'set-cookie',
-  'better-auth.session_token=; Max-Age=0; Path=/'
-)
-return Astro.redirect('/login')
+
+// Forward cookies cleared by better-auth (don't hardcode cookie names)
+const redirectHeaders = new Headers({ location: '/login' })
+const setCookies = (response.headers as any).getSetCookie?.() as string[] | undefined
+  ?? (response.headers.get('set-cookie') ? [response.headers.get('set-cookie')!] : [])
+for (const cookie of setCookies) redirectHeaders.append('set-cookie', cookie)
+
+return new Response(null, { status: 302, headers: redirectHeaders })
 ---
