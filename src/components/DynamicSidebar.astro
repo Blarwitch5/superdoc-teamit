@@ -34,12 +34,19 @@ const docsPath = join(process.cwd(), 'src/content/docs')
 
 const isActive = (href: string) => currentPath === (href.replace(/\/$/, '') || '/')
 
-const categoryDirs = readdirSync(docsPath)
+let savedOrder: { categories: string[]; fiches: Record<string, string[]> } = { categories: [], fiches: {} }
+try { savedOrder = JSON.parse(readFileSync(join(docsPath, '_order.json'), 'utf-8')) } catch {}
+
+const allDirs = readdirSync(docsPath)
   .filter(name => {
     try { return statSync(join(docsPath, name)).isDirectory() && !name.startsWith('.') }
     catch { return false }
   })
-  .sort()
+
+const categoryDirs = [
+  ...savedOrder.categories.filter(d => allDirs.includes(d)),
+  ...allDirs.filter(d => !savedOrder.categories.includes(d)).sort(),
+]
 
 const sidebar: SidebarEntry[] = []
 
@@ -47,9 +54,15 @@ for (const dir of categoryDirs) {
   const dirPath = join(docsPath, dir)
   const label = CATEGORY_LABELS[dir] ?? (dir.charAt(0).toUpperCase() + dir.slice(1))
 
-  let files: string[]
-  try { files = readdirSync(dirPath).filter(f => /\.(mdx|mdoc|md)$/.test(f)).sort() }
+  let rawFiles: string[]
+  try { rawFiles = readdirSync(dirPath).filter(f => /\.(mdx|mdoc|md)$/.test(f)) }
   catch { continue }
+
+  const ficheOrder = savedOrder.fiches[dir] ?? []
+  const files = [
+    ...ficheOrder.map(s => rawFiles.find(f => f.replace(/\.(mdx|mdoc|md)$/, '') === s)).filter(Boolean) as string[],
+    ...rawFiles.filter(f => !ficheOrder.includes(f.replace(/\.(mdx|mdoc|md)$/, ''))).sort(),
+  ]
 
   const items = files.map(file => {
     const slug = basename(file).replace(/\.(mdx|mdoc|md)$/, '')

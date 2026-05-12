@@ -136,6 +136,7 @@ function keystaticWithCustomApi() {
 }
 
 export default defineConfig({
+  site: 'https://superdoc.team-it.ch',
   output: 'server',
   trailingSlash: 'ignore',
   adapter: node({ mode: 'standalone' }),
