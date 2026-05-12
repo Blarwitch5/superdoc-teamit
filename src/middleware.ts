@@ -32,5 +32,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   context.locals.user = session.user
   context.locals.session = session.session
+
+  // Keystatic: allow create + item edit, block the dashboard and collection list views
+  if (pathname.startsWith('/keystatic')) {
+    const isAllowed =
+      /^\/keystatic\/collection\/[^/]+\/item\/.+/.test(pathname) ||
+      /^\/keystatic\/collection\/[^/]+\/create$/.test(pathname)
+    if (!isAllowed) return context.redirect('/admin')
+  }
+
   return next()
 })
