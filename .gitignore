@@ -1,5 +1,5 @@
-# build output
-dist/
+# build output tracked for production deployment
+# dist/
 # generated types
 .astro/
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100%" height="100%" viewBox="0 0 1900 800" version="1.1" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:10;">
+    <g transform="matrix(1.18884,0,0,1.18884,-76.5363,17.3005)">
+        <path d="M195,567.2C195,567.2 267.2,632.4 424.9,628.4C424.9,628.4 330.7,219.1 567.9,9C567.9,9 430.3,112.7 315.8,295.1C267.3,372.4 223,463.6 195,567.2Z" style="fill:rgb(223,49,35);fill-rule:nonzero;stroke:rgb(223,49,35);stroke-width:1px;"/>
+    </g>
+    <g transform="matrix(1.18884,0,0,1.18884,-76.5363,17.3005)">
+        <path d="M615.6,563.4C615.6,563.4 516.2,651.8 332,622.3C332,622.3 512.6,312.2 240,113.8C240,113.8 338.7,167.6 446.9,294.2C505,362.1 565.7,450.9 615.6,563.4Z" style="fill:rgb(27,27,24);fill-rule:nonzero;stroke:rgb(27,27,24);stroke-width:1px;"/>
+    </g>
+    <text x="710" y="510" font-family="system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="290" letter-spacing="-6">
+        <tspan fill="rgb(27,27,24)">Team </tspan><tspan fill="rgb(223,49,35)">IT</tspan>
+    </text>
+</svg>
