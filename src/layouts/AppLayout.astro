@@ -1,0 +1,76 @@
+---
+/**
+ * Base layout for standalone pages (login, admin) — outside Starlight.
+ * Provides HTML shell, flash-prevention theme script, and shared CSS variables.
+ *
+ * Props:
+ *   title    — <title> content
+ *   centered — wraps the body in a flex centering context (login page)
+ */
+import ThemeInitScript from '../components/ThemeInitScript.astro'
+
+interface Props {
+  title: string
+  centered?: boolean
+}
+
+const { title, centered = false } = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <ThemeInitScript />
+  <style is:global>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #1c1c1c;
+      --surface:      #272727;
+      --surface-hover:#2f2f2f;
+      --border:       #3a3a3a;
+      --border-subtle:#303030;
+      --text:         #f0f0f0;
+      --muted:        #888;
+      --subtle:       #555;
+      --input-bg:     #1c1c1c;
+      --input-border: #3d3d3d;
+      --accent:       #df3123;
+      --accent-hover: #c42b1e;
+    }
+
+    [data-theme="light"] {
+      --bg:           #f2f2f2;
+      --surface:      #ffffff;
+      --surface-hover:#f5f5f5;
+      --border:       #ececec;
+      --border-subtle:#f2f2f2;
+      --text:         #1a1a1a;
+      --muted:        #666;
+      --subtle:       #bbb;
+      --input-bg:     #fafafa;
+      --input-border: #d0d0d0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      transition: background 0.2s, color 0.2s;
+    }
+
+    body.centered {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class:list={[{ centered }]}>
+  <slot />
+</body>
+</html>
