@@ -1,0 +1,146 @@
+/*
+ * app.css — chargé par AppLayout (login, admin) ET importé par global.css (Starlight).
+ * Source de vérité pour les tokens de marque et les classes utilitaires.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. PRIMITIVES DE MARQUE
+   Source : logo officiel Team IT
+     Rouge  #df3123  rgb(223,49,35)  — flamme du logo
+     Sombre #1b1b18  rgb(27,27,24)   — texte du logo
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ti-red:        #df3123;
+  --ti-red-hover:  #c42b1e;
+  --ti-red-bright: #e85748;   /* rouge clair — textes/liens sur fond dark      */
+  --ti-dark:       #1b1b18;   /* gris logo — bg dark, texte light              */
+  --ti-white:      #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. TOKENS SÉMANTIQUES — pages hors Starlight (login, admin)
+   Contrastes WCAG :
+     --text light (#1b1b18) sur #fff          → 17.5:1 ✓ AAA
+     --muted light (#5c5a57) sur #fff         → 7.2:1  ✓ AAA
+     --text dark (#f0eeeb) sur #1b1b18        → 13:1   ✓ AAA
+     --muted dark (#a09d99) sur #1b1b18       → 5.5:1  ✓ AA
+     --danger light (#dc2626) sur #fff        → 5.4:1  ✓ AA
+     --danger dark (#fca5a5) sur #1b1b18      → 7:1    ✓ AA
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Light (défaut) */
+:root {
+  --bg:            #f5f4f1;
+  --surface:       var(--ti-white);
+  --surface-hover: #f0efec;
+  --border:        #e3e1dd;
+  --border-subtle: #eeede9;
+  --text:          var(--ti-dark);
+  --muted:         #5c5a57;
+  --subtle:        #b0ada8;
+  --input-bg:      var(--ti-white);
+  --input-border:  #d0cdc9;
+  --accent:        var(--ti-red);
+  --accent-hover:  var(--ti-red-hover);
+  --danger:        #dc2626;
+  --danger-bg:     rgba(220, 38, 38, 0.06);
+}
+
+/* Dark */
+[data-theme='dark'] {
+  --bg:            var(--ti-dark);
+  --surface:       #252422;
+  --surface-hover: #2e2b28;
+  --border:        #3d3a37;
+  --border-subtle: #2a2825;
+  --text:          #f0eeeb;
+  --muted:         #a09d99;
+  --subtle:        #5c5a57;
+  --input-bg:      #1f1e1b;
+  --input-border:  #4a4845;
+  --accent:        var(--ti-red);
+  --accent-hover:  var(--ti-red-hover);
+  --danger:        #fca5a5;
+  --danger-bg:     rgba(252, 165, 165, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. CLASSES UTILITAIRES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Erreurs ─────────────────────────────────────────────────────────────── */
+
+.error-box {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.error-text {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
+
+.app-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 0.375rem;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.app-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(223, 49, 35, 0.15);
+}
+
+.app-input::placeholder {
+  color: var(--subtle);
+}
+
+/* ── Boutons ─────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.875rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--ti-white);
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--surface-hover);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--muted); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }

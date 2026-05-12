@@ -1,59 +1,35 @@
 ---
 /**
- * Base layout for standalone pages (login, admin) — outside Starlight.
- * Provides HTML shell, flash-prevention theme script, and shared CSS variables.
+ * Layout de base pour les pages hors Starlight (login, admin).
  *
- * Props:
- *   title    — <title> content
- *   centered — wraps the body in a flex centering context (login page)
+ * Props :
+ *   title     — contenu du <title>
+ *   centered  — centre le body en flex (page login)
+ *   forceDark — force data-theme="dark" sans lire le localStorage (page login)
  */
 import ThemeInitScript from '../components/ThemeInitScript.astro'
+import '../styles/app.css'
 
 interface Props {
   title: string
   centered?: boolean
+  forceDark?: boolean
 }
 
-const { title, centered = false } = Astro.props
+const { title, centered = false, forceDark = false } = Astro.props
 ---
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme={forceDark ? 'dark' : undefined}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
-  <ThemeInitScript />
+  {/* ThemeInitScript lit le localStorage — on le saute si le thème est forcé */}
+  {!forceDark && <ThemeInitScript />}
   <style is:global>
+    /* Tokens et utilitaires → app.css (importé dans le frontmatter) */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:           #1c1c1c;
-      --surface:      #272727;
-      --surface-hover:#2f2f2f;
-      --border:       #3a3a3a;
-      --border-subtle:#303030;
-      --text:         #f0f0f0;
-      --muted:        #888;
-      --subtle:       #555;
-      --input-bg:     #1c1c1c;
-      --input-border: #3d3d3d;
-      --accent:       #df3123;
-      --accent-hover: #c42b1e;
-    }
-
-    [data-theme="light"] {
-      --bg:           #f2f2f2;
-      --surface:      #ffffff;
-      --surface-hover:#f5f5f5;
-      --border:       #ececec;
-      --border-subtle:#f2f2f2;
-      --text:         #1a1a1a;
-      --muted:        #666;
-      --subtle:       #bbb;
-      --input-bg:     #fafafa;
-      --input-border: #d0d0d0;
-    }
 
     body {
       min-height: 100vh;

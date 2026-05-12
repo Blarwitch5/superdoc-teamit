@@ -1,20 +1,32 @@
 @import "tailwindcss";
+@import './app.css';   /* --ti-* primitives + tokens sémantiques + utilitaires */
 
-/* Team IT brand colors — rouge rgb(223,49,35), noir rgb(27,27,24) */
+/* ═══════════════════════════════════════════════════════════════════════════
+   OVERRIDES STARLIGHT
+   Utilise les primitives --ti-* fournies par app.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Accent — light ──────────────────────────────────────────────────────── */
 :root {
   --sl-color-accent-low:  #fde8e6;
-  --sl-color-accent:      rgb(223, 49, 35);
-  --sl-color-accent-high: #8c1b10;
+  --sl-color-accent:      var(--ti-red);
+  --sl-color-accent-high: #9e1f0f;
 }
 
+/* ── Accent + backgrounds — dark ─────────────────────────────────────────── */
 :root[data-theme='dark'] {
   --sl-color-accent-low:  #3d100a;
-  --sl-color-accent:      #e85748;
+  --sl-color-accent:      var(--ti-red-bright);  /* 5.1:1 sur #1b1b18 ✓ */
   --sl-color-accent-high: #f5b8b3;
+
+  /* Aligne Starlight sur le bg de marque */
+  --sl-color-bg:          var(--ti-dark);
+  --sl-color-bg-nav:      #131311;
+  --sl-color-bg-sidebar:  #222220;
 }
 
-/* Sidebar — light red border */
+/* ── Sidebar — bordure accent ────────────────────────────────────────────── */
 .sidebar-pane {
-  --sl-color-hairline: rgb(223 49 35 / 0.18);
-  --sl-color-hairline-light: rgb(223 49 35 / 0.1);
+  --sl-color-hairline:       rgba(223, 49, 35, 0.18);
+  --sl-color-hairline-light: rgba(223, 49, 35, 0.10);
 }

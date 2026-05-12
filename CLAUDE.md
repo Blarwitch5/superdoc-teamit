@@ -43,3 +43,47 @@ Docs live in `src/content/docs/`. Each directory under `docs/` maps to a sidebar
 ## i18n
 
 Default locale is French (`root`). English translations go in `src/content/docs/en/`. UI strings go in `src/content/i18n/fr.json` and `src/content/i18n/en.json`.
+
+## Design tokens & couleurs
+
+### Primitives de marque (src/styles/global.css)
+
+Dérivées du logo officiel Team IT :
+
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `--ti-red` | `#df3123` | Rouge logo — accent principal, boutons, badges |
+| `--ti-red-hover` | `#c42b1e` | Rouge foncé — état hover |
+| `--ti-red-bright` | `#e85748` | Rouge plus clair — liens/textes sur fond dark |
+| `--ti-dark` | `#1b1b18` | Gris foncé logo — bg dark theme, texte light theme |
+| `--ti-white` | `#ffffff` | Blanc pur |
+
+Ces primitives sont disponibles **globalement** (Starlight + AppLayout).  
+Ne jamais hardcoder `#df3123`, `#1b1b18`, `#ffffff` — utiliser les tokens.
+
+### Tokens sémantiques (src/layouts/AppLayout.astro, is:global)
+
+Disponibles sur les pages hors Starlight (login, admin) :
+
+| Token | Light | Dark | Contraste |
+|-------|-------|------|-----------|
+| `--bg` | `#f5f4f1` | `#1b1b18` | bg page |
+| `--surface` | `#ffffff` | `#252422` | cartes, panneaux |
+| `--surface-hover` | `#f0efec` | `#2e2b28` | hover |
+| `--border` | `#e3e1dd` | `#3d3a37` | bordures |
+| `--border-subtle` | `#eeede9` | `#2a2825` | séparateurs |
+| `--text` | `#1b1b18` | `#f0eeeb` | 17.5:1 / 13:1 ✓ AAA |
+| `--muted` | `#5c5a57` | `#a09d99` | 7.2:1 / 5.5:1 ✓ AA |
+| `--subtle` | `#b0ada8` | `#5c5a57` | décoratif |
+| `--accent` | `var(--ti-red)` | `var(--ti-red)` | boutons, focus |
+| `--accent-hover` | `var(--ti-red-hover)` | `var(--ti-red-hover)` | hover boutons |
+| `--danger` | `#dc2626` | `#fca5a5` | 5.4:1 / 7:1 ✓ AA |
+| `--danger-bg` | `rgba(220,38,38,0.06)` | `rgba(252,165,165,0.08)` | fond erreur |
+
+### Règles
+
+- Toujours utiliser `var(--token)` — jamais de couleur hex directe dans les styles.
+- `--danger` / `--danger-bg` pour tous les états d'erreur (pas `#f87171`).
+- Le logo Team IT nécessite un fond blanc fixe (`var(--ti-white)`) quelle que soit le thème.
+- La page login force `data-theme="dark"` via prop `forceDark` sur `AppLayout` — ne pas modifier.
+- Sur Starlight, utiliser les variables `--sl-color-*` (déjà overridées dans global.css).

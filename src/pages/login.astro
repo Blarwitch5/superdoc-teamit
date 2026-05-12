@@ -36,7 +36,7 @@ if (Astro.request.method === 'POST') {
 }
 ---
 
-<AppLayout title="Connexion — Documentation Team IT" centered>
+<AppLayout title="Connexion — Documentation Team IT" centered forceDark>
   <div class="theme-corner">
     <ThemeSwitcher />
   </div>
@@ -49,18 +49,18 @@ if (Astro.request.method === 'POST') {
     </div>
     <p class="subtitle">Documentation</p>
 
-    {loginError && <p class="error" role="alert">{loginError}</p>}
+    {loginError && <p class="error-box" role="alert">{loginError}</p>}
 
     <form method="POST">
       <label>
         Email
-        <input type="email" name="email" required autocomplete="email" />
+        <input class="app-input" type="email" name="email" required autocomplete="email" />
       </label>
       <label>
         Mot de passe
-        <input type="password" name="password" required autocomplete="current-password" />
+        <input class="app-input" type="password" name="password" required autocomplete="current-password" />
       </label>
-      <button type="submit">Se connecter</button>
+      <button type="submit" class="btn btn-primary">Se connecter</button>
     </form>
   </div>
 </AppLayout>
@@ -104,15 +104,9 @@ if (Astro.request.method === 'POST') {
     text-transform: uppercase;
   }
 
-  .error {
-    color: #f87171;
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-    padding: 0.625rem 0.75rem;
-    background: rgba(248, 113, 113, 0.08);
-    border: 1px solid rgba(248, 113, 113, 0.2);
-    border-radius: 0.375rem;
-  }
+  /* .error-box, .app-input, .btn, .btn-primary → app.css */
+
+  .error-box { margin-bottom: 1rem; }
 
   form {
     display: flex;
@@ -130,37 +124,12 @@ if (Astro.request.method === 'POST') {
     letter-spacing: 0.02em;
   }
 
-  input {
-    padding: 0.5625rem 0.75rem;
-    background: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 0.375rem;
-    color: var(--text);
-    font-size: 0.9375rem;
-    transition: border-color 0.15s;
-  }
-
-  input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(223, 49, 35, 0.15);
-  }
-
   button[type="submit"] {
     margin-top: 0.5rem;
     padding: 0.6875rem 1rem;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
     font-size: 0.9375rem;
     font-weight: 600;
-    cursor: pointer;
     letter-spacing: 0.01em;
-    transition: background 0.15s;
-  }
-
-  button[type="submit"]:hover {
-    background: var(--accent-hover);
+    width: 100%;
   }
 </style>
