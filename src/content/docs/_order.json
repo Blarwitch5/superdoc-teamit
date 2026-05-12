@@ -1,0 +1,44 @@
+{
+  "categories": [
+    "email",
+    "administratif",
+    "installation",
+    "serveur",
+    "test",
+    "testons",
+    "web"
+  ],
+  "fiches": {
+    "email": [
+      "configuration-outlook",
+      "configuration-iphone",
+      "creation-adresse-mail"
+    ],
+    "administratif": [
+      "creation-acces-infomaniak",
+      "depart-collaborateur",
+      "onboarding-nouveau-collaborateur"
+    ],
+    "installation": [
+      "configuration-vpn",
+      "imprimante-reseau",
+      "nouveau-poste-windows"
+    ],
+    "serveur": [
+      "acces-ftp-sftp",
+      "creation-base-de-donnees",
+      "sauvegarde-site"
+    ],
+    "test": [
+      "hello"
+    ],
+    "testons": [
+      "hello-2"
+    ],
+    "web": [
+      "certificat-ssl",
+      "creation-hebergement-infomaniak",
+      "deploiement-git"
+    ]
+  }
+}
