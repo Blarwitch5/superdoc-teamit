@@ -2,73 +2,38 @@
 import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro'
 import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro'
 import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter'
-import { readdirSync, statSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, basename } from 'node:path'
+import { parseFrontmatter, readOrder, getCategoryDirs, getOrderedFiles, DOCS_PATH } from '../lib/content'
 
-type SidebarLink = { type: 'link'; label: string; href: string; isCurrent: boolean; badge: undefined; attrs: Record<string, unknown> }
+type SidebarLink  = { type: 'link';  label: string; href: string; isCurrent: boolean; badge: undefined; attrs: Record<string, unknown> }
 type SidebarGroup = { type: 'group'; label: string; entries: SidebarEntry[]; collapsed: boolean; badge: undefined }
 type SidebarEntry = SidebarLink | SidebarGroup
 
-const CATEGORY_LABELS: Record<string, string> = {
-  web:           'Web',
-  administratif: 'Administratif',
-  installation:  'Installation',
-  email:         'Email',
-  serveur:       'Serveur',
-}
-
-function parseFm(content: string): Record<string, string> {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(content)
-  if (!match) return {}
-  const fm: Record<string, string> = {}
-  for (const line of match[1].split(/\r?\n/)) {
-    const colonIdx = line.indexOf(':')
-    if (colonIdx === -1) continue
-    fm[line.slice(0, colonIdx).trim()] = line.slice(colonIdx + 1).trim().replace(/^['"]|['"]$/g, '')
-  }
-  return fm
-}
-
 const currentPath = new URL(Astro.request.url).pathname.replace(/\/$/, '') || '/'
-const docsPath = join(process.cwd(), 'src/content/docs')
-
 const isActive = (href: string) => currentPath === (href.replace(/\/$/, '') || '/')
 
-let savedOrder: { categories: string[]; fiches: Record<string, string[]> } = { categories: [], fiches: {} }
-try { savedOrder = JSON.parse(readFileSync(join(docsPath, '_order.json'), 'utf-8')) } catch {}
-
-const allDirs = readdirSync(docsPath)
-  .filter(name => {
-    try { return statSync(join(docsPath, name)).isDirectory() && !name.startsWith('.') }
-    catch { return false }
-  })
-
-const categoryDirs = [
-  ...savedOrder.categories.filter(d => allDirs.includes(d)),
-  ...allDirs.filter(d => !savedOrder.categories.includes(d)).sort(),
-]
-
+const savedOrder = readOrder()
 const sidebar: SidebarEntry[] = []
 
-for (const dir of categoryDirs) {
-  const dirPath = join(docsPath, dir)
-  const label = CATEGORY_LABELS[dir] ?? (dir.charAt(0).toUpperCase() + dir.slice(1))
+for (const dir of getCategoryDirs(savedOrder)) {
+  const dirPath = join(DOCS_PATH, dir)
 
-  let rawFiles: string[]
-  try { rawFiles = readdirSync(dirPath).filter(f => /\.(mdx|mdoc|md)$/.test(f)) }
-  catch { continue }
+  // Label comes from the category index.mdx frontmatter
+  let label = dir.charAt(0).toUpperCase() + dir.slice(1)
+  try {
+    const fm = parseFrontmatter(readFileSync(join(dirPath, 'index.mdx'), 'utf-8'))
+    if (fm.title) label = fm.title
+  } catch {}
 
-  const ficheOrder = savedOrder.fiches[dir] ?? []
-  const files = [
-    ...ficheOrder.map(s => rawFiles.find(f => f.replace(/\.(mdx|mdoc|md)$/, '') === s)).filter(Boolean) as string[],
-    ...rawFiles.filter(f => !ficheOrder.includes(f.replace(/\.(mdx|mdoc|md)$/, ''))).sort(),
-  ]
+  const files = getOrderedFiles(dir, savedOrder)
+  if (!files.length) continue
 
   const items = files.map(file => {
-    const slug = basename(file).replace(/\.(mdx|mdoc|md)$/, '')
+    const slug = basename(file).replace(/\.(mdx|md|mdoc)$/, '')
     const href = slug === 'index' ? `/${dir}/` : `/${dir}/${slug}/`
     try {
-      const fm = parseFm(readFileSync(join(dirPath, file), 'utf-8'))
+      const fm = parseFrontmatter(readFileSync(join(dirPath, file), 'utf-8'))
       return { href, title: fm.title || slug, subcategory: fm.subcategory || '' }
     } catch {
       return { href, title: slug, subcategory: '' }
@@ -86,31 +51,34 @@ for (const dir of categoryDirs) {
 
   if (!items.some(item => item.subcategory)) {
     sidebar.push({ type: 'group', label, collapsed: false, badge: undefined, entries: items.map(toLink) })
-  } else {
-    const ungrouped = items.filter(item => !item.subcategory)
-    const grouped: Record<string, typeof items> = {}
-    for (const item of items.filter(item => item.subcategory)) {
-      ;(grouped[item.subcategory] ??= []).push(item)
-    }
-    sidebar.push({
-      type: 'group',
-      label,
-      collapsed: false,
-      badge: undefined,
-      entries: [
-        ...ungrouped.map(toLink),
-        ...Object.entries(grouped)
-          .sort(([a], [b]) => a.localeCompare(b, 'fr'))
-          .map(([sub, subItems]): SidebarGroup => ({
-            type: 'group',
-            label: sub,
-            collapsed: false,
-            badge: undefined,
-            entries: subItems.map(toLink),
-          })),
-      ],
-    })
+    continue
   }
+
+  // Group by subcategory; ungrouped items appear first
+  const ungrouped = items.filter(item => !item.subcategory)
+  const grouped: Record<string, typeof items> = {}
+  for (const item of items.filter(item => item.subcategory)) {
+    (grouped[item.subcategory] ??= []).push(item)
+  }
+
+  sidebar.push({
+    type: 'group',
+    label,
+    collapsed: false,
+    badge: undefined,
+    entries: [
+      ...ungrouped.map(toLink),
+      ...Object.entries(grouped)
+        .sort(([a], [b]) => a.localeCompare(b, 'fr'))
+        .map(([sub, subItems]): SidebarGroup => ({
+          type: 'group',
+          label: sub,
+          collapsed: false,
+          badge: undefined,
+          entries: subItems.map(toLink),
+        })),
+    ],
+  })
 }
 ---
 
