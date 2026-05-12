@@ -4,8 +4,6 @@
     "administratif",
     "installation",
     "serveur",
-    "test",
-    "testons",
     "web"
   ],
   "fiches": {
@@ -28,12 +26,6 @@
       "acces-ftp-sftp",
       "creation-base-de-donnees",
       "sauvegarde-site"
-    ],
-    "test": [
-      "hello"
-    ],
-    "testons": [
-      "hello-2"
     ],
     "web": [
       "certificat-ssl",

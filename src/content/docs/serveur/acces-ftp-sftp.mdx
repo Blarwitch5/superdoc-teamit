@@ -1,44 +1,56 @@
 ---
-title: Connexion FTP / SFTP
-description: Se connecter aux fichiers d'un hébergement Infomaniak via FTP ou SFTP avec FileZilla.
-category: serveur
+title: Accès FTP / SFTP
+description: Configuration de l'accès FTP/SFTP à un hébergement Infomaniak avec FileZilla.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
 ## Prérequis
 
-- [FileZilla](https://filezilla-project.org/) installé (ou Cyberduck en alternative)
-- Identifiants FTP disponibles dans le Manager Infomaniak
+- **FileZilla** installé ([filezilla-project.org](https://filezilla-project.org/))
+- Identifiants FTP disponibles dans Infomaniak Manager
 
 ## Récupérer les identifiants FTP
 
-1. Connectez-vous au Manager → **Hébergement Web** → sélectionnez l'hébergement → **Gérer**.
-2. Allez dans l'onglet **FTP / SSH**.
-3. Notez :
-   - **Serveur FTP** (ex : `ftp1234.infomaniak.com`)
-   - **Utilisateur FTP principal**
-   - **Mot de passe** (si oublié, cliquez sur **Réinitialiser le mot de passe FTP**)
+1. Se connecter à [manager.infomaniak.com](https://manager.infomaniak.com).
+2. Aller dans **Hébergement Web → [nom du service] → FTP**.
+3. Copier :
+   - **Hôte** (ex. : `ftp.cluster0XX.hosting.ovh.net` ou `ftp.infomaniak.com`)
+   - **Nom d'utilisateur**
+   - **Port** : `21` (FTP) ou `22` (SFTP)
 
-## Configurer FileZilla (SFTP recommandé)
+Le mot de passe FTP peut être celui du compte ou un mot de passe dédié à réinitialiser depuis cette interface.
 
-1. Ouvrez FileZilla → **Fichier** → **Gestionnaire de sites** → **Nouveau site**.
-2. Renseignez :
-   - **Protocole** : `SFTP - SSH File Transfer Protocol`
-   - **Hôte** : `ftp1234.infomaniak.com`
-   - **Port** : `22`
-   - **Type d'authentification** : Normale
-   - **Identifiant** et **Mot de passe** FTP
-3. Cliquez sur **Connexion**.
+## Configuration dans FileZilla
 
-## Navigation dans les fichiers
+### Via le Gestionnaire de sites (recommandé)
 
-- Le dossier des fichiers web accessibles publiquement est **`web/`**.
-- Ne modifiez pas les dossiers système en dehors de `web/`.
+1. Ouvrir FileZilla → **Fichier → Gestionnaire de sites → Nouveau site**.
+2. Renseigner :
+   - **Protocole** : `SFTP - SSH File Transfer Protocol` (préférer SFTP pour la sécurité) ou `FTP`
+   - **Hôte** : l'hôte copié depuis Manager
+   - **Port** : `22` pour SFTP, `21` pour FTP
+   - **Mode de connexion** : Normale
+   - **Identifiant / Mot de passe** : identifiants FTP
+3. Cliquer sur **Connexion**.
 
-## FTP classique (si SFTP non disponible)
+## Navigation et transfert
 
-Utilisez le port `21` avec le protocole FTP et le chiffrement **FTP explicite sur TLS**.
+- Le panneau gauche affiche les fichiers locaux, le droit les fichiers distants.
+- La racine du site web est généralement dans `/web/` ou `/htdocs/`.
+- Pour transférer : glisser-déposer entre les deux panneaux, ou clic droit → **Envoyer**.
 
-## Notes
+## Bonnes pratiques
 
-- Préférez toujours SFTP (port 22) au FTP simple pour la sécurité.
-- Pour créer des utilisateurs FTP supplémentaires avec accès restreint à un sous-dossier : Manager → **FTP / SSH** → **Ajouter un utilisateur FTP**.
+- Utiliser **SFTP** plutôt que FTP (connexion chiffrée).
+- Ne pas modifier les fichiers directement sur le serveur — travailler en local et uploader.
+- Sauvegarder avant toute modification importante (voir [Sauvegarde de site](/serveur/sauvegarde-site/)).
+
+## Dépannage
+
+- **Connexion refusée** : vérifier le port (21 vs 22) et les identifiants.
+- **Timeout** : vérifier que le pare-feu ne bloque pas les ports FTP/SFTP.
+- **Erreur 530** : identifiants incorrects — réinitialiser le mot de passe FTP dans Manager.

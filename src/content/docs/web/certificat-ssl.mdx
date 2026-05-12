@@ -1,42 +1,66 @@
 ---
-title: Activation d'un certificat SSL
-description: Activer ou renouveler un certificat SSL Let's Encrypt sur un hébergement Infomaniak.
-category: web
+title: Certificat SSL
+description: Activation et renouvellement d'un certificat SSL sur Infomaniak.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
-## Prérequis
+## Contexte
 
-- Hébergement Infomaniak actif avec un domaine pointant vers cet hébergement
-- Le domaine doit résoudre correctement (propagation DNS terminée)
+Un certificat SSL est indispensable pour sécuriser les échanges (HTTPS) et améliorer le référencement. Infomaniak propose des certificats **Let's Encrypt** gratuits et des certificats payants (DV, OV, EV).
 
-## Activer le certificat SSL
+## Activation d'un certificat Let's Encrypt (gratuit)
 
-1. Connectez-vous au Manager → **Hébergement Web** → sélectionnez l'hébergement → **Gérer**.
-2. Allez dans l'onglet **Certificats SSL**.
-3. Cliquez sur **Ajouter un certificat** → choisissez **Let's Encrypt** (gratuit).
-4. Sélectionnez le ou les domaines à sécuriser (domaine principal + sous-domaines si nécessaire).
-5. Cliquez sur **Valider** — le certificat est émis en quelques minutes.
-
-## Forcer le HTTPS
-
-Une fois le certificat actif, activez la redirection automatique HTTP → HTTPS :
-
-1. Toujours dans l'onglet **Certificats SSL**, activez l'option **Forcer HTTPS**.
-2. Vérifiez que le site est accessible en HTTPS sans avertissement de sécurité dans le navigateur.
-
-## Renouvellement
-
-Let's Encrypt est valide 90 jours. Infomaniak renouvelle automatiquement le certificat. En cas d'échec :
-
-1. Vérifiez que le domaine pointe toujours vers cet hébergement (aucune modification DNS récente).
-2. Supprimez le certificat existant et réémettez-en un nouveau.
+1. Se connecter à [manager.infomaniak.com](https://manager.infomaniak.com).
+2. Aller dans **Hébergement Web → [nom du service] → SSL**.
+3. Cliquer sur **Ajouter un certificat SSL**.
+4. Choisir **Let's Encrypt (gratuit)**.
+5. Sélectionner le ou les domaines à sécuriser.
+6. Cliquer sur **Valider** — le certificat est émis en quelques minutes.
 
 ## Vérification
 
-- Ouvrez le site dans Chrome → cliquez sur le cadenas dans la barre d'adresse.
-- La date d'expiration et l'autorité de certification (Let's Encrypt) doivent être visibles.
+Une fois activé, vérifier que le site est accessible en HTTPS :
 
-## Notes
+```
+https://www.votredomaine.ch
+```
 
-- Pour les domaines externes (DNS non gérés par Infomaniak), une validation par enregistrement DNS peut être requise.
-- Un certificat SSL Sectigo (payant) est disponible pour les besoins de validation étendue (EV).
+L'icône cadenas doit être visible dans la barre d'adresse du navigateur.
+
+## Renouvellement automatique
+
+Les certificats Let's Encrypt sont renouvelés automatiquement par Infomaniak **30 jours avant expiration**. Aucune action manuelle n'est requise si le certificat a été créé via le Manager.
+
+En cas d'échec de renouvellement automatique, Infomaniak envoie un e-mail d'alerte — vérifier les adresses de notification dans le compte.
+
+## Redirection HTTP → HTTPS
+
+Après l'activation du SSL, forcer la redirection HTTP vers HTTPS.
+
+### Via le `.htaccess` (Apache)
+
+Ajouter en début de fichier `.htaccess` à la racine du site :
+
+```apache
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+```
+
+### Via WordPress
+
+Installer le plugin **Really Simple SSL** ou modifier l'URL du site dans **Réglages → Général**.
+
+## Certificat payant (DV / OV / EV)
+
+Pour les sites nécessitant un niveau de confiance élevé (e-commerce, banque) :
+
+1. Aller dans **SSL → Acheter un certificat**.
+2. Choisir le type (DV = validation de domaine, OV = organisation, EV = extended).
+3. Suivre le processus de validation selon le type choisi.
+
+Les certificats OV et EV nécessitent une validation de l'organisation (documents à fournir à l'autorité de certification).

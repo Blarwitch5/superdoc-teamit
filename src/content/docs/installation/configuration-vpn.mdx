@@ -1,50 +1,50 @@
 ---
-title: Configuration du VPN
-description: Installer et configurer le client VPN pour l'accès distant au réseau de l'entreprise.
-category: installation
+title: Configuration VPN
+description: Installation et configuration du client VPN sur Windows.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
 ## Prérequis
 
-- Identifiants VPN fournis par l'administrateur réseau
-- Fichier de configuration (`.ovpn` pour OpenVPN ou profil fourni)
+- Windows 10 ou 11
+- Identifiants VPN fournis par l'administrateur (serveur, nom d'utilisateur, mot de passe, éventuelle clé ou certificat)
 
-## Installation du client OpenVPN
+## Configuration du VPN intégré Windows (IKEv2 / L2TP)
 
-1. Téléchargez **OpenVPN Connect** depuis [openvpn.net/client](https://openvpn.net/client/).
-2. Lancez l'installeur et suivez les étapes (options par défaut).
+1. Aller dans **Paramètres → Réseau et Internet → VPN**.
+2. Cliquer sur **Ajouter une connexion VPN**.
+3. Renseigner :
+   - **Fournisseur VPN** : Windows (intégré)
+   - **Nom de la connexion** : ex. *VPN Team IT*
+   - **Nom ou adresse du serveur** : adresse fournie par l'administrateur
+   - **Type de réseau privé virtuel** : IKEv2 (ou L2TP/IPsec selon le serveur)
+   - **Type d'informations d'identification** : Nom d'utilisateur et mot de passe
+   - **Nom d'utilisateur / Mot de passe** : identifiants fournis
+4. Cliquer sur **Enregistrer**.
 
-## Importer le profil de connexion
+## Connexion
 
-1. Ouvrez OpenVPN Connect.
-2. Cliquez sur **+** → **Upload File**.
-3. Sélectionnez le fichier `.ovpn` fourni par l'IT.
-4. Entrez le nom du profil (ex : `VPN Entreprise`) → **Ajouter**.
+1. Cliquer sur l'icône réseau dans la barre des tâches.
+2. Sélectionner la connexion VPN créée.
+3. Cliquer sur **Connexion**.
 
-## Se connecter
+## Configuration OpenVPN (si applicable)
 
-1. Dans OpenVPN Connect, sélectionnez le profil importé.
-2. Entrez vos identifiants (nom d'utilisateur et mot de passe VPN).
-3. Cliquez sur **Connecter** — l'icône passe au vert en cas de succès.
+1. Télécharger **OpenVPN Connect** sur [openvpn.net](https://openvpn.net/client/).
+2. Installer l'application.
+3. Importer le fichier `.ovpn` fourni par l'administrateur : **Fichier → Importer profil → Depuis fichier**.
+4. Saisir les identifiants et se connecter.
 
 ## Vérification
 
-1. Une fois connecté, ouvrez un navigateur et accédez à une ressource interne (ex : serveur de fichiers `\\\\192.168.x.x` ou intranet).
-2. Si la connexion réseau interne fonctionne, le VPN est opérationnel.
-
-## Déconnexion
-
-Cliquez sur le bouton **Déconnecter** dans OpenVPN Connect. Déconnectez-vous toujours du VPN quand il n'est plus nécessaire.
+Une fois connecté, vérifier l'accès aux ressources internes (serveur de fichiers, intranet) via leur adresse IP privée.
 
 ## Dépannage
 
-| Problème | Solution |
-|---|---|
-| Connexion refusée | Vérifiez identifiants et que le fichier `.ovpn` est le bon |
-| VPN connecté mais pas d'accès réseau | Vérifiez le split tunneling avec l'admin |
-| Déconnexions fréquentes | Vérifiez la stabilité de la connexion Internet locale |
-
-## Notes
-
-- Le mot de passe VPN est différent du mot de passe Windows/AD. Contactez l'IT pour tout renouvellement.
-- Ne partagez jamais votre profil `.ovpn` ou vos identifiants VPN.
+- **Connexion refusée** : vérifier que les identifiants sont corrects et que le service VPN du serveur est actif.
+- **Timeout** : vérifier que le pare-feu réseau autorise les ports VPN (UDP 500, 4500 pour IKEv2 ; UDP 1194 pour OpenVPN).
+- **Déconnexions fréquentes** : activer le **Reconnect automatique** dans les paramètres du client.

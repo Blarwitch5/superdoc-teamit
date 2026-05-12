@@ -1,47 +1,59 @@
 ---
 title: Départ d'un collaborateur
-description: Checklist IT pour la clôture des accès lors du départ d'un employé.
-category: administratif
+description: Procédure de clôture des accès lors du départ d'un collaborateur.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
-## À effectuer le jour du départ
+## Important
 
-### Accès à révoquer immédiatement
+Cette procédure doit être réalisée **le jour du départ**, idéalement avant la fin de la journée de travail du collaborateur.
 
-- [ ] Désactiver le compte Active Directory / compte réseau
-- [ ] Désactiver ou supprimer la boîte e-mail (ou configurer une redirection temporaire)
-- [ ] Révoquer l'accès Infomaniak (voir fiche *Création d'un accès Infomaniak*)
-- [ ] Supprimer ou réinitialiser les accès VPN
-- [ ] Révoquer les accès aux applications métier (CRM, ERP, outils cloud…)
-- [ ] Modifier les mots de passe partagés éventuellement connus du collaborateur
+## Checklist de clôture
 
-### Récupération du matériel
+### Accès systèmes
 
-- [ ] Ordinateur portable / fixe
-- [ ] Téléphone mobile professionnel
-- [ ] Câbles, chargeurs, adaptateurs
-- [ ] Badges et clés d'accès physiques
+- [ ] Désactiver le compte Windows / Active Directory
+- [ ] Révoquer l'accès VPN
+- [ ] Changer le mot de passe Wi-Fi si connu du collaborateur
 
-### Récupération des données
+### Messagerie
 
-1. Connectez-vous en administrateur sur le poste rendu.
-2. Copiez les dossiers **Documents**, **Bureau** et **Téléchargements** vers le serveur partagé.
-3. Archivez la boîte e-mail si nécessaire (export `.pst` depuis Outlook ou archive depuis le Manager Infomaniak).
+- [ ] Mettre en place un **répondeur automatique** (message d'absence + contact de remplacement)
+- [ ] Configurer une **redirection** des e-mails entrants vers le responsable ou successeur
+- [ ] Révoquer l'accès aux boîtes partagées
+- [ ] Désactiver le compte e-mail après la période de redirection (généralement 30 jours)
 
-## Dans les jours suivants
+### Infomaniak Manager
 
-- [ ] Réaffecter ou effacer le poste pour le prochain utilisateur
-- [ ] Mettre à jour le registre IT (matériel disponible)
-- [ ] Informer les équipes concernées de la clôture des accès
+- [ ] Révoquer l'accès dans **Gestion des utilisateurs** (voir [Création d'accès Infomaniak](/administratif/creation-acces-infomaniak/))
+- [ ] Vérifier les accès FTP/SFTP associés au compte
 
-## Boîte mail après départ
+### Outils et services tiers
 
-| Situation | Action recommandée |
-|---|---|
-| Remplacement immédiat | Rediriger vers le remplaçant pendant 1 mois |
-| Pas de remplaçant | Configurer un message d'absence, archiver puis supprimer après 3 mois |
+- [ ] Désactiver le compte Microsoft 365 / Google Workspace
+- [ ] Révoquer l'accès aux outils métier (CRM, ERP, gestion de projet…)
+- [ ] Déconnecter les sessions actives (outils cloud)
+- [ ] Révoquer les tokens d'API si applicable
 
-## Notes
+### Matériel
 
-- Ne supprimez jamais un compte AD immédiatement — désactivez-le d'abord et attendez 30 jours avant suppression définitive.
-- Conservez l'archive e-mail pendant au moins 6 mois en cas de litige.
+- [ ] Récupérer l'ordinateur, téléphone et tout matériel prêté
+- [ ] Effacer et réinitialiser le matériel mobile (MDM ou procédure manuelle)
+- [ ] Récupérer les clés et badges d'accès physique
+
+### Données
+
+- [ ] Sauvegarder et archiver les données professionnelles du collaborateur
+- [ ] Transférer les dossiers en cours au successeur
+
+## Délai de conservation
+
+Conserver le compte e-mail (en redirection uniquement) pendant **30 jours** minimum avant suppression définitive.
+
+## Archivage
+
+Conserver une trace de la date de départ et des accès révoqués dans le dossier RH.

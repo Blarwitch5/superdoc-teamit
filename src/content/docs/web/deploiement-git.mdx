@@ -1,42 +1,66 @@
 ---
-title: Déploiement automatique via Git
-description: Configurer le déploiement automatique d'un site depuis un dépôt Git sur Infomaniak.
-category: web
+title: Déploiement Git
+description: Déploiement automatique d'un projet via Git sur Infomaniak.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
+
+## Contexte
+
+Le déploiement Git permet de mettre à jour automatiquement le site sur le serveur à chaque `git push`, sans passer par FTP. Infomaniak supporte cette méthode via son interface Manager.
 
 ## Prérequis
 
 - Hébergement Infomaniak actif
-- Dépôt Git existant (GitHub, GitLab ou Bitbucket)
-- Accès SSH activé sur l'hébergement
+- Dépôt Git existant (GitHub, GitLab, Bitbucket ou dépôt Infomaniak)
+- Accès SSH ou accès à l'interface Manager
 
-## Activer Git sur l'hébergement
+## Configuration via le Manager
 
-1. Connectez-vous au Manager → **Hébergement Web** → sélectionnez l'hébergement → **Gérer**.
-2. Allez dans l'onglet **Git**.
-3. Cliquez sur **Activer Git** et choisissez la branche à déployer (généralement `main`).
-4. Infomaniak génère une **clé SSH publique** — copiez-la.
+1. Se connecter à [manager.infomaniak.com](https://manager.infomaniak.com).
+2. Aller dans **Hébergement Web → [nom du service] → Déploiement Git**.
+3. Cliquer sur **Activer le déploiement Git**.
+4. Renseigner :
+   - **URL du dépôt** : URL HTTPS ou SSH du dépôt (ex. : `https://github.com/organisation/monsite.git`)
+   - **Branche** : la branche à déployer (ex. : `main` ou `production`)
+   - **Dossier de destination** : généralement `/web/`
+5. Si dépôt privé, ajouter la **clé SSH publique** générée par Infomaniak dans les clés autorisées du dépôt (GitHub : Settings → Deploy keys).
+6. Cliquer sur **Enregistrer**.
 
-## Configurer le dépôt distant
+## Déploiement manuel depuis Manager
 
-1. Sur GitHub/GitLab, allez dans **Settings** → **Deploy keys**.
-2. Collez la clé SSH d'Infomaniak et activez l'accès en lecture.
-3. Copiez l'URL SSH du dépôt (ex : `git@github.com:organisation/projet.git`).
+Après configuration, cliquer sur **Déployer** dans l'interface pour déclencher un déploiement immédiat.
 
-## Lier le dépôt à l'hébergement
+## Déploiement automatique via webhook
 
-1. Retournez dans l'onglet Git du Manager.
-2. Collez l'URL SSH du dépôt dans le champ **Repository URL**.
-3. Indiquez le dossier de destination (ex : `web/` pour la racine publique).
-4. Cliquez sur **Enregistrer** — Infomaniak effectue un premier pull.
+Pour déclencher un déploiement à chaque `git push` :
 
-## Déploiement automatique (webhook)
+1. Copier l'**URL du webhook** affichée dans le Manager.
+2. Sur GitHub : **Settings → Webhooks → Add webhook**.
+   - Payload URL : l'URL copiée
+   - Content type : `application/json`
+   - Événement : `push`
+3. Cliquer sur **Add webhook**.
 
-1. Dans le Manager, copiez l'**URL du webhook** fournie par Infomaniak.
-2. Sur GitHub : **Settings** → **Webhooks** → **Add webhook** → collez l'URL, événement : `push`.
-3. Chaque push sur la branche configurée déclenche un déploiement automatique.
+Désormais, chaque `git push` sur la branche configurée déclenche automatiquement un déploiement.
 
-## Vérification
+## Déploiement via SSH (avancé)
 
-- Effectuez un commit de test sur la branche → vérifiez que les fichiers sont mis à jour sur le serveur.
-- Les logs de déploiement sont disponibles dans l'onglet Git du Manager.
+Si l'hébergement dispose d'un accès SSH :
+
+```bash
+# Depuis le serveur, dans le dossier du site
+git pull origin main
+```
+
+Ou via un script de déploiement déclenché par webhook/CI.
+
+## Bonnes pratiques
+
+- Ne jamais déployer directement sur `main` — travailler sur une branche de développement et merger après validation.
+- Configurer un environnement de **staging** sur une branche dédiée avant la production.
+- Vérifier que le fichier `.gitignore` exclut les fichiers sensibles (`.env`, `vendor/`, `node_modules/`).
+- Tester le déploiement sur un site de test avant de configurer la production.

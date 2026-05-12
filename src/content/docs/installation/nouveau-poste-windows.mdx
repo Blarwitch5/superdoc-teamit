@@ -1,55 +1,59 @@
 ---
-title: Mise en place d'un poste Windows
-description: Checklist de configuration initiale d'un nouveau PC sous Windows 10/11.
-category: installation
+title: Nouveau poste Windows
+description: Checklist de mise en place d'un nouveau poste de travail Windows.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
-## Étapes de configuration initiale
+## Installation du système
 
-### 1. Windows Update
+- [ ] Installer Windows 11 (ou 10 selon la politique interne) avec une clé de licence valide
+- [ ] Effectuer toutes les mises à jour Windows Update jusqu'à ce qu'il n'y en ait plus
+- [ ] Vérifier et installer les pilotes manquants (carte graphique, réseau, son) via le gestionnaire de périphériques
 
-1. Allez dans **Paramètres** → **Windows Update** → **Rechercher les mises à jour**.
-2. Installez toutes les mises à jour disponibles et redémarrez si demandé.
-3. Répétez jusqu'à ce qu'aucune mise à jour ne soit disponible.
+## Sécurité de base
 
-### 2. Rejoindre le domaine (si applicable)
+- [ ] Activer et configurer **Windows Defender** ou l'antivirus d'entreprise
+- [ ] Activer le **pare-feu Windows**
+- [ ] Activer **BitLocker** (chiffrement du disque) si la politique de sécurité l'exige
+- [ ] Configurer les **mises à jour automatiques** sur Windows Update
 
-1. **Paramètres** → **Système** → **À propos** → **Rejoindre un domaine**.
-2. Entrez le nom de domaine de l'entreprise et les identifiants administrateur AD.
-3. Redémarrez le poste.
+## Comptes et accès
 
-### 3. Logiciels essentiels à installer
+- [ ] Créer le compte utilisateur (local ou domaine) avec un mot de passe fort
+- [ ] Désactiver le compte Administrateur local par défaut si non nécessaire
+- [ ] Joindre le domaine Active Directory si applicable
+- [ ] Configurer l'accès VPN (voir [Configuration VPN](/installation/configuration-vpn/))
 
-| Logiciel | Usage |
-|---|---|
-| Google Chrome | Navigateur principal |
-| Microsoft Office | Suite bureautique |
-| Adobe Acrobat Reader | Lecture PDF |
-| 7-Zip | Compression de fichiers |
-| FileZilla | Client FTP (si nécessaire) |
-| Client VPN | Accès réseau distant (voir fiche *Configuration du VPN*) |
+## Logiciels essentiels
 
-Téléchargez les logiciels depuis les sources officielles uniquement.
+- [ ] Navigateur : Google Chrome ou Microsoft Edge (à jour)
+- [ ] Suite bureautique : Microsoft 365 ou LibreOffice
+- [ ] Client mail : Microsoft Outlook (voir [Configuration Outlook](/email/configuration-outlook/))
+- [ ] PDF : Adobe Acrobat Reader
+- [ ] 7-Zip ou WinRAR
+- [ ] Client FTP : FileZilla (si nécessaire)
 
-### 4. Configurer la boîte mail
+## Périphériques
 
-Suivez la fiche *Configuration sur Outlook* pour ajouter la boîte mail du collaborateur.
+- [ ] Configurer l'imprimante réseau (voir [Imprimante réseau](/installation/imprimante-reseau/))
+- [ ] Vérifier le son, la caméra et le microphone (réunions en ligne)
+- [ ] Configurer les écrans supplémentaires si applicable
 
-### 5. Imprimante réseau
+## Messagerie et communication
 
-Suivez la fiche *Installation d'une imprimante réseau*.
+- [ ] Configurer Outlook avec le compte e-mail professionnel
+- [ ] Installer et configurer Microsoft Teams ou l'outil de communication interne
 
-### 6. Chiffrement du disque (BitLocker)
+## Sauvegarde
 
-1. Recherchez **BitLocker** dans le menu Démarrer → **Gérer BitLocker**.
-2. Activez BitLocker sur le lecteur C: et enregistrez la clé de récupération dans le dossier partagé IT.
+- [ ] Vérifier que les dossiers utilisateur sont synchronisés (OneDrive, serveur de fichiers ou solution de sauvegarde)
 
-## Checklist finale
+## Vérification finale
 
-- [ ] Windows à jour
-- [ ] Compte domaine configuré
-- [ ] Logiciels essentiels installés
-- [ ] Boîte mail configurée dans Outlook
-- [ ] Imprimante réseau accessible
-- [ ] BitLocker activé, clé enregistrée
-- [ ] VPN fonctionnel
+- [ ] Redémarrer le poste et vérifier que tout fonctionne correctement
+- [ ] Remettre les identifiants à l'utilisateur et lui demander de changer son mot de passe
+- [ ] Faire signer le bon de réception du matériel

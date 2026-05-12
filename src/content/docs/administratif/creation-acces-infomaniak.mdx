@@ -1,44 +1,45 @@
 ---
-title: Création d'un accès Infomaniak
-description: Inviter un collaborateur sur le compte Infomaniak de l'entreprise et définir ses permissions.
-category: administratif
+title: Création d'accès Infomaniak
+description: Ajout d'un collaborateur à l'interface Infomaniak Manager.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
-## Prérequis
+## Contexte
 
-- Accès administrateur au compte Infomaniak de l'entreprise
-- Adresse e-mail du collaborateur à inviter
+Cette procédure permet d'inviter un collaborateur (technicien, client) à accéder à un ou plusieurs services Infomaniak sans partager les identifiants du compte principal.
 
-## Inviter un collaborateur
+## Accès
 
-1. Connectez-vous au [Manager Infomaniak](https://manager.infomaniak.com).
-2. Cliquez sur votre **nom de compte** (en haut à droite) → **Utilisateurs et droits**.
-3. Cliquez sur **Ajouter un utilisateur** → **Inviter par e-mail**.
-4. Entrez l'adresse e-mail du collaborateur.
-5. Définissez le **rôle** selon son niveau d'intervention :
+1. Se connecter à [manager.infomaniak.com](https://manager.infomaniak.com) avec le compte administrateur.
+2. Cliquer sur l'icône de compte en haut à droite → **Gestion des utilisateurs**.
 
-| Rôle | Accès |
-|---|---|
-| Administrateur | Accès complet à tous les services |
-| Gestionnaire | Peut gérer les services mais pas la facturation |
-| Technicien | Accès restreint aux services définis |
+## Invitation d'un utilisateur
 
-6. Sélectionnez les **services spécifiques** accessibles si le rôle est Technicien.
-7. Cliquez sur **Envoyer l'invitation**.
+1. Cliquer sur **Inviter un utilisateur**.
+2. Saisir l'adresse e-mail du collaborateur.
+3. Choisir le **rôle** :
+   - **Administrateur** : accès complet à tous les services
+   - **Utilisateur** : accès limité aux services définis
+4. Si rôle **Utilisateur**, cocher les services auxquels il doit avoir accès (hébergement, domaines, e-mails, etc.).
+5. Cliquer sur **Inviter**.
 
-## Après l'invitation
+Le collaborateur reçoit un e-mail d'invitation pour créer ou lier son compte Infomaniak.
 
-- Le collaborateur reçoit un e-mail d'invitation Infomaniak.
-- Il crée ou connecte son compte personnel Infomaniak.
-- Une fois accepté, il apparaît dans la liste **Utilisateurs et droits**.
+## Gestion des permissions par service
 
-## Révoquer un accès
+Pour affiner les droits sur un service spécifique :
 
-1. Allez dans **Utilisateurs et droits**.
-2. Cliquez sur les trois points à côté du nom → **Supprimer**.
-3. L'accès est révoqué immédiatement.
+1. Aller dans le service concerné (ex. : **Hébergement Web → [nom du service]**).
+2. Onglet **Utilisateurs** → **Ajouter un utilisateur**.
+3. Sélectionner le collaborateur et définir son niveau d'accès.
 
-## Notes
+## Révocation d'un accès
 
-- Chaque collaborateur se connecte avec son propre compte Infomaniak personnel — ne partagez jamais un identifiant commun.
-- En cas de départ d'un collaborateur, révoquez l'accès le jour même (voir fiche *Départ d'un collaborateur*).
+1. **Gestion des utilisateurs** → sélectionner l'utilisateur.
+2. Cliquer sur **Révoquer** ou **Supprimer l'accès**.
+
+> Effectuer cette opération dès le départ d'un collaborateur (voir la fiche [Départ d'un collaborateur](/administratif/depart-collaborateur/)).

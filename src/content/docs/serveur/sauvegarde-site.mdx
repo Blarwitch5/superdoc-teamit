@@ -1,46 +1,76 @@
 ---
-title: Sauvegarde d'un site web
-description: Effectuer une sauvegarde complète des fichiers et de la base de données d'un hébergement.
-category: serveur
+title: Sauvegarde de site
+description: Procédure de sauvegarde manuelle d'un site hébergé sur Infomaniak.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
-## Ce que couvre cette sauvegarde
+## Vue d'ensemble
 
-- Fichiers du site (dossier `web/`)
-- Base de données MySQL
+Une sauvegarde complète comprend deux éléments :
+1. **Les fichiers** du site (code, médias, configuration)
+2. **La base de données** (contenu, utilisateurs, paramètres)
 
-## 1. Sauvegarder les fichiers via FTP
+À effectuer avant toute mise à jour majeure, migration ou intervention risquée.
 
-1. Connectez-vous à l'hébergement avec FileZilla (voir fiche *Connexion FTP / SFTP*).
-2. Sélectionnez l'intégralité du dossier `web/` dans le panneau distant.
-3. Faites un clic droit → **Télécharger** dans un dossier local daté (ex : `sauvegarde_2026-05-08/`).
+## Sauvegarde des fichiers
 
-## 2. Sauvegarder la base de données via phpMyAdmin
+### Via FileZilla (FTP/SFTP)
 
-1. Ouvrez phpMyAdmin depuis le Manager → **Hébergement Web** → **Bases de données**.
-2. Sélectionnez la base de données dans le panneau de gauche.
-3. Cliquez sur **Exporter**.
-4. Choisissez le format **SQL** → cliquez sur **Exécuter**.
-5. Enregistrez le fichier `.sql` dans le même dossier que les fichiers du site.
+1. Se connecter au serveur (voir [Accès FTP/SFTP](/serveur/acces-ftp-sftp/)).
+2. Naviguer jusqu'au dossier racine du site (généralement `/web/`).
+3. Sélectionner tous les fichiers et dossiers (Ctrl+A).
+4. Télécharger vers un dossier local dédié (ex. : `sauvegardes/monsite_AAAA-MM-JJ/`).
 
-## 3. Archiver la sauvegarde
+### Via le Manager Infomaniak
 
-1. Compressez le dossier de sauvegarde en `.zip` ou `.tar.gz`.
-2. Stockez l'archive sur un support externe ou un espace cloud sécurisé.
+1. Se connecter à [manager.infomaniak.com](https://manager.infomaniak.com).
+2. Aller dans **Hébergement Web → [nom du service] → Sauvegardes**.
+3. Sélectionner un point de restauration ou déclencher une sauvegarde manuelle.
+4. Télécharger l'archive générée.
 
-## Restaurer la base de données
+## Sauvegarde de la base de données
 
-1. Dans phpMyAdmin, sélectionnez la base de données cible.
-2. Cliquez sur **Importer** → sélectionnez le fichier `.sql` → **Exécuter**.
+### Via phpMyAdmin
+
+1. Ouvrir phpMyAdmin depuis le Manager.
+2. Sélectionner la base de données.
+3. Onglet **Exporter**.
+4. Choisir **Rapide**, format **SQL**.
+5. Cliquer sur **Exécuter** — un fichier `.sql` est téléchargé.
+
+### Via SSH (si disponible)
+
+```bash
+mysqldump -h mysqliXXX.infomaniak.com -u utilisateur -p nom_de_la_base > sauvegarde_AAAA-MM-JJ.sql
+```
+
+## Organisation des sauvegardes
+
+Stocker les sauvegardes dans un emplacement séparé du serveur (NAS, cloud, poste local) avec la convention de nommage :
+
+```
+sauvegardes/
+  monsite_2024-06-15/
+    fichiers/
+    base_de_donnees.sql
+```
 
 ## Fréquence recommandée
 
 | Type de site | Fréquence |
-|---|---|
-| Site vitrine statique | Mensuelle ou avant chaque modification |
-| Site e-commerce / WordPress actif | Hebdomadaire |
-| Application métier critique | Quotidienne (automatiser si possible) |
+|-------------|-----------|
+| Site vitrine (peu de mises à jour) | Mensuelle + avant chaque intervention |
+| Site e-commerce / CMS actif | Hebdomadaire automatique + manuelle avant intervention |
+| Application critique | Quotidienne automatique |
 
-## Notes
+## Restauration
 
-- Infomaniak propose des sauvegardes automatiques quotidiennes (7 jours de rétention) accessibles dans le Manager → **Sauvegardes**. Cette fiche documente la sauvegarde manuelle en complément.
+Pour restaurer :
+1. **Fichiers** : uploader les fichiers via FTP en écrasant les existants.
+2. **Base de données** : importer le dump `.sql` via phpMyAdmin (onglet **Importer**) ou via SSH.
+
+Toujours tester la restauration dans un environnement de staging avant la production.

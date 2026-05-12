@@ -1,45 +1,48 @@
 ---
-title: Installation d'une imprimante réseau
-description: Ajouter et configurer une imprimante partagée sur le réseau local.
-category: installation
+title: Imprimante réseau
+description: Ajout et configuration d'une imprimante réseau sur Windows.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
 ## Prérequis
 
-- Imprimante connectée au réseau local (câble RJ45 ou Wi-Fi)
-- Adresse IP de l'imprimante (voir étiquette au dos ou impression de la page de config)
-- Drivers disponibles sur le site du fabricant
+- Imprimante connectée au réseau local (IP fixe recommandée)
+- Adresse IP de l'imprimante (vérifiable sur l'écran de l'imprimante ou via le panneau de configuration réseau)
+- Pilotes disponibles sur le site du fabricant
 
-## Trouver l'adresse IP de l'imprimante
+## Méthode 1 — Détection automatique
 
-Si l'adresse n'est pas connue :
+1. Aller dans **Paramètres → Bluetooth et appareils → Imprimantes et scanners**.
+2. Cliquer sur **Ajouter un appareil**.
+3. Windows recherche les imprimantes disponibles sur le réseau.
+4. Sélectionner l'imprimante détectée et cliquer sur **Ajouter**.
 
-1. Sur l'imprimante, imprimez la **page de configuration réseau** (menu de l'imprimante ou bouton dédié).
-2. Ou scannez le réseau depuis un poste : **cmd** → `arp -a` pour lister les équipements connectés.
+Si l'imprimante n'apparaît pas, passer à la méthode 2.
 
-## Installer le pilote
+## Méthode 2 — Ajout manuel par adresse IP
 
-1. Rendez-vous sur le site du fabricant (HP, Canon, Brother, etc.) → téléchargez le pilote pour le modèle exact.
-2. Exécutez l'installeur → choisissez l'installation **réseau / TCP/IP** (ne pas utiliser le câble USB).
-3. Entrez l'adresse IP de l'imprimante quand demandé.
-
-## Ajouter l'imprimante manuellement (si le pilote ne suffit pas)
-
-1. **Paramètres** → **Bluetooth et appareils** → **Imprimantes et scanners** → **Ajouter**.
-2. Cliquez sur **L'imprimante n'est pas dans la liste**.
-3. Choisissez **Ajouter une imprimante locale avec un port manuel**.
-4. Créez un port TCP/IP standard → entrez l'adresse IP.
-5. Sélectionnez le pilote dans la liste ou installez-le manuellement.
+1. Aller dans **Paramètres → Bluetooth et appareils → Imprimantes et scanners**.
+2. Cliquer sur **Ajouter manuellement** (lien en bas de la liste).
+3. Choisir **Ajouter une imprimante à l'aide d'une adresse TCP/IP ou d'un nom d'hôte**.
+4. Saisir l'adresse IP de l'imprimante.
+5. Windows détecte le pilote ou propose d'en installer un.
+6. Si le pilote n'est pas trouvé automatiquement : cliquer sur **Disque fourni** et pointer vers le pilote téléchargé.
 
 ## Définir comme imprimante par défaut
 
-1. Dans **Imprimantes et scanners**, cliquez sur l'imprimante → **Gérer** → **Définir par défaut**.
+1. Aller dans **Paramètres → Bluetooth et appareils → Imprimantes et scanners**.
+2. Cliquer sur l'imprimante → **Définir par défaut**.
 
-## Test
+## Vérification
 
-Imprimez une page de test depuis **Gérer** → **Imprimer une page de test**.
+Imprimer une page de test : **Paramètres de l'imprimante → Page de test**.
 
-## Notes
+## Dépannage
 
-- Assignez une IP fixe à l'imprimante depuis son interface web ou depuis le DHCP du routeur pour éviter que l'adresse change.
-- Pour partager l'imprimante vers d'autres postes : **Propriétés de l'imprimante** → onglet **Partage** → cocher **Partager cette imprimante**.
+- **Imprimante hors ligne** : vérifier la connexion réseau de l'imprimante et redémarrer le service `Spouleur d'impression` (services.msc).
+- **Travaux bloqués** : ouvrir la file d'impression → annuler tous les travaux → relancer le spouleur.
+- **Mauvais pilote** : désinstaller l'imprimante et réinstaller avec le pilote officiel du fabricant.

@@ -1,36 +1,44 @@
 ---
 title: Création d'une adresse e-mail
-description: Créer une nouvelle adresse e-mail sur un domaine géré par Infomaniak.
-category: email
+description: Procédure de création d'une adresse e-mail sur Infomaniak.
+subcategory: ''
+createdBy: ''
+createdAt: ''
+modifiedBy: ''
+modifiedAt: ''
 ---
 
-## Prérequis
+## Accès
 
-- Accès au Manager Infomaniak avec droits d'administration
-- Domaine avec service Mail Infomaniak actif
+1. Se connecter à [manager.infomaniak.com](https://manager.infomaniak.com).
+2. Dans le menu latéral, aller dans **Hébergement Web → [nom du service] → E-mail**.
 
-## Étapes
+## Création de l'adresse
 
-1. Connectez-vous au [Manager Infomaniak](https://manager.infomaniak.com).
-2. Dans le menu, allez dans **Emails** → sélectionnez le nom de domaine concerné.
-3. Cliquez sur **Créer une adresse e-mail**.
-4. Renseignez :
-   - **Adresse** : la partie avant le `@` (ex : `jean.dupont`)
-   - **Nom affiché** : prénom et nom du collaborateur
-   - **Mot de passe** : générez un mot de passe fort (minimum 12 caractères)
-5. Cliquez sur **Créer**.
+1. Cliquer sur **Créer une adresse e-mail**.
+2. Renseigner :
+   - **Adresse** : partie avant le `@` (ex. : `prenom.nom`)
+   - **Domaine** : sélectionner le domaine dans la liste déroulante
+   - **Mot de passe** : générer ou saisir un mot de passe fort (min. 12 caractères, majuscule, chiffre, symbole)
+   - **Quota** : laisser la valeur par défaut ou ajuster selon les besoins
+3. Cliquer sur **Créer**.
 
 ## Après la création
 
-- Communiquez les informations de connexion au collaborateur de façon sécurisée (pas par e-mail en clair).
-- L'adresse est accessible immédiatement via le **Webmail Infomaniak** : [mail.infomaniak.com](https://mail.infomaniak.com).
-- Pour configurer l'adresse sur Outlook ou iPhone, suivez les fiches dédiées.
+- **Communiquer les identifiants** à l'utilisateur via un canal sécurisé (jamais par e-mail non chiffré).
+- **Tester l'accès** via [mail.infomaniak.com](https://mail.infomaniak.com) (webmail).
+- **Configurer le client mail** selon les fiches [Configuration Outlook](/email/configuration-outlook/) ou [Configuration iPhone](/email/configuration-iphone/).
 
-## Quota et espace
+## Options supplémentaires
 
-- L'espace par défaut est défini dans l'offre Mail. Ajustez-le si nécessaire depuis **Emails** → **Gérer** → onglet **Quota**.
+| Option | Utilité |
+|--------|---------|
+| Alias | Ajouter une adresse supplémentaire sur la même boîte |
+| Redirection | Transférer les e-mails vers une autre adresse |
+| Répondeur automatique | Message d'absence |
+| Filtre anti-spam | Activer / ajuster le niveau de filtrage |
 
 ## Notes
 
-- Pour créer un alias (autre adresse qui redirige vers la même boîte), utilisez **Emails** → **Alias**.
-- Pour une redirection vers une adresse externe, utilisez **Emails** → **Redirections**.
+- Le quota par défaut est généralement de **5 Go** ; augmenter si l'utilisateur reçoit beaucoup de pièces jointes.
+- Préférer le format `prenom.nom@domaine.ch` pour la cohérence.

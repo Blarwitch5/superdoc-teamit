@@ -56,7 +56,7 @@ export function getOrderedFiles(dir: string, order: OrderData): string[] {
   const dirPath = join(DOCS_PATH, dir)
   let rawFiles: string[]
   try {
-    rawFiles = readdirSync(dirPath).filter(f => /\.(mdx|md|mdoc)$/.test(f))
+    rawFiles = readdirSync(dirPath).filter(f => /\.(mdx|md|mdoc)$/.test(f) && !/^index\./.test(f))
   } catch {
     return []
   }
