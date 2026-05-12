@@ -1,7 +1,6 @@
 ---
 import MobileTableOfContents from 'virtual:starlight/components/MobileTableOfContents'
 import TableOfContents from 'virtual:starlight/components/TableOfContents'
-import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter'
 import PencilIcon from '@lucide/astro/icons/pencil'
 
 const { entry, toc } = Astro.locals.starlightRoute
@@ -18,7 +17,6 @@ const hasRightSidebar = toc || editUrl
 {toc && (
   <div class="lg:sl-hidden">
     <MobileTableOfContents />
-    <MobileMenuFooter />
   </div>
 )}
 
