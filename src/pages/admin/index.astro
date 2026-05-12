@@ -425,7 +425,6 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
       el.classList.remove('drag-over-top', 'drag-over-bottom')
     })
     catDragEl = null
-    saveOrder()
   }, true)
 
   accordion.addEventListener('dragover', (e) => {
@@ -452,9 +451,11 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
     const target = (e.target as HTMLElement).closest<HTMLElement>('details[data-cat]')
     if (!target || target === catDragEl) return
     e.preventDefault()
-    const before = e.clientY < target.getBoundingClientRect().top + target.getBoundingClientRect().height / 2
+    const rect = target.getBoundingClientRect()
+    const before = e.clientY < rect.top + rect.height / 2
     accordion.insertBefore(catDragEl, before ? target : target.nextSibling)
     target.classList.remove('drag-over-top', 'drag-over-bottom')
+    saveOrder()
   })
 
   // ── Fiche drag & drop (same category only) ──────────────────────
@@ -475,7 +476,6 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
         el.classList.remove('drag-over-top', 'drag-over-bottom')
       })
       ficheDragEl = null
-      saveOrder()
     })
 
     item.addEventListener('dragover', (e) => {
@@ -498,9 +498,11 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
       if (!ficheDragEl || ficheDragEl === item || ficheDragEl.dataset.cat !== item.dataset.cat) return
       e.preventDefault()
       e.stopPropagation()
-      const before = e.clientY < item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2
+      const rect = item.getBoundingClientRect()
+      const before = e.clientY < rect.top + rect.height / 2
       item.parentElement!.insertBefore(ficheDragEl, before ? item : item.nextSibling)
       item.classList.remove('drag-over-top', 'drag-over-bottom')
+      saveOrder()
     })
   })
 
