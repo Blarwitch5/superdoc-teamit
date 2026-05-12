@@ -72,6 +72,7 @@ export default defineConfig({
       components: {
         Footer:      './src/components/FicheFooter.astro',
         SocialIcons: './src/components/HeaderNav.astro',
+        Search:      './src/components/Search.astro',
         Sidebar:     './src/components/DynamicSidebar.astro',
         PageSidebar: './src/components/EditPageSidebar.astro',
       },

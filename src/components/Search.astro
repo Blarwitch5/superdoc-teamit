@@ -1,0 +1,400 @@
+---
+// Replaces Starlight's default Search component.
+// Uses /api/search (SSR-compatible) + Fuse.js for client-side fuzzy search.
+---
+
+<button
+  id="search-trigger"
+  class="search-trigger"
+  aria-label="Rechercher"
+  aria-keyshortcuts="Control+k Meta+k"
+  type="button"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  <span class="search-label">Rechercher</span>
+  <kbd class="search-kbd">⌘K</kbd>
+</button>
+
+<div id="search-modal" role="dialog" aria-modal="true" aria-label="Rechercher une fiche" hidden>
+  <div id="search-backdrop"></div>
+  <div id="search-panel">
+    <div class="search-row">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="search-row-icon">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        id="search-input"
+        type="search"
+        placeholder="Rechercher une fiche…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-autocomplete="list"
+        aria-controls="search-listbox"
+      />
+      <button id="search-close" type="button" aria-label="Fermer">
+        <kbd>Esc</kbd>
+      </button>
+    </div>
+    <ul id="search-listbox" role="listbox" aria-label="Résultats de recherche"></ul>
+    <p id="search-empty" hidden>Aucun résultat pour cette recherche.</p>
+    <p id="search-idle">Commencez à saisir pour rechercher…</p>
+  </div>
+</div>
+
+<style>
+  /* ── Trigger ──────────────────────────────────────────────────────────── */
+  .search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--sl-text-sm);
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    white-space: nowrap;
+    /* Light (default) */
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    color: var(--ti-dark);
+  }
+  :root[data-theme='dark'] .search-trigger {
+    background: var(--ti-dark);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .search-trigger:hover {
+    border-color: var(--ti-red);
+    color: var(--ti-dark);
+  }
+  :root[data-theme='dark'] .search-trigger:hover {
+    border-color: var(--ti-red);
+    color: #ffffff;
+  }
+  .search-label {
+    display: none;
+  }
+  @media (min-width: 50rem) {
+    .search-label { display: inline; }
+  }
+  .search-kbd {
+    display: none;
+    background: #f3f4f6;
+    border: 1px solid #d4d4d4;
+    border-radius: 0.25rem;
+    color: #6b7280;
+    font-family: inherit;
+    font-size: 0.68rem;
+    padding: 0.1rem 0.35rem;
+  }
+  :root[data-theme='dark'] .search-kbd {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.35);
+  }
+  @media (min-width: 72rem) {
+    .search-kbd { display: inline; }
+  }
+
+  /* ── Modal overlay ────────────────────────────────────────────────────── */
+  #search-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+    padding-inline: 1rem;
+  }
+  #search-modal[hidden] { display: none; }
+
+  #search-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+  }
+
+  /* ── Panel ────────────────────────────────────────────────────────────── */
+  #search-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(640px, 100%);
+    max-height: 70vh;
+    background: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.75rem;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+  }
+
+  /* ── Input row ────────────────────────────────────────────────────────── */
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    flex-shrink: 0;
+  }
+  .search-row-icon { color: var(--sl-color-gray-3); flex-shrink: 0; }
+  #search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--sl-color-white);
+    font-family: inherit;
+    font-size: 1rem;
+  }
+  #search-input::placeholder { color: var(--sl-color-gray-4); }
+  #search-input::-webkit-search-cancel-button { display: none; }
+
+  #search-close {
+    background: transparent;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+    color: var(--sl-color-gray-3);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  #search-close:hover { border-color: var(--sl-color-accent); color: var(--sl-color-white); }
+
+  /* ── Results ──────────────────────────────────────────────────────────── */
+  #search-listbox {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  #search-listbox li a {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.1s;
+  }
+  #search-listbox li a:hover,
+  #search-listbox li a[data-active] {
+    background: var(--sl-color-bg-sidebar);
+  }
+  #search-listbox li a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -2px;
+  }
+
+  .result-title {
+    color: var(--sl-color-white);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
+  .result-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .result-cat {
+    flex-shrink: 0;
+    background: var(--sl-color-accent);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+  }
+  .result-desc {
+    color: var(--sl-color-gray-3);
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(mark) {
+    background: transparent;
+    color: var(--sl-color-accent-high, var(--sl-color-accent));
+    font-weight: 600;
+  }
+
+  /* ── Status messages ──────────────────────────────────────────────────── */
+  #search-empty,
+  #search-idle {
+    color: var(--sl-color-gray-3);
+    font-size: 0.875rem;
+    margin: 0;
+    padding: 1.5rem;
+    text-align: center;
+  }
+</style>
+
+<script>
+  import Fuse from 'fuse.js'
+
+  type Entry = { title: string; description: string; category: string; href: string }
+  type Match = { key?: string; indices: ReadonlyArray<[number, number]> }
+
+  const trigger  = document.getElementById('search-trigger')!
+  const modal    = document.getElementById('search-modal')!
+  const backdrop = document.getElementById('search-backdrop')!
+  const input    = document.getElementById('search-input') as HTMLInputElement
+  const closeBtn = document.getElementById('search-close')!
+  const listbox  = document.getElementById('search-listbox')!
+  const emptyMsg = document.getElementById('search-empty')!
+  const idleMsg  = document.getElementById('search-idle')!
+
+  let fuse: Fuse<Entry> | null = null
+  let activeIdx = -1
+
+  // ── Open / close ──────────────────────────────────────────────────────
+
+  async function open() {
+    modal.hidden = false
+    input.focus()
+    if (!fuse) await loadIndex()
+  }
+
+  function close() {
+    modal.hidden = true
+    input.value = ''
+    listbox.innerHTML = ''
+    emptyMsg.hidden = true
+    idleMsg.hidden = false
+    activeIdx = -1
+  }
+
+  trigger.addEventListener('click', open)
+  closeBtn.addEventListener('click', close)
+  backdrop.addEventListener('click', close)
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); open() }
+    if (e.key === 'Escape' && !modal.hidden) close()
+  })
+
+  // ── Load index from API ────────────────────────────────────────────────
+
+  async function loadIndex() {
+    try {
+      const res = await fetch('/api/search')
+      if (!res.ok) return
+      const data: Entry[] = await res.json()
+      fuse = new Fuse(data, {
+        keys: [
+          { name: 'title', weight: 3 },
+          { name: 'description', weight: 1.5 },
+          { name: 'category', weight: 0.5 },
+        ],
+        threshold: 0.35,
+        includeMatches: true,
+        minMatchCharLength: 2,
+      })
+    } catch {}
+  }
+
+  // ── Search & render ────────────────────────────────────────────────────
+
+  function esc(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  }
+
+  function highlight(text: string, matches: Match[] | undefined, key: string): string {
+    const m = matches?.find(m => m.key === key)
+    if (!m?.indices.length) return esc(text)
+    let out = '', last = 0
+    for (const [s, e] of m.indices) {
+      out += esc(text.slice(last, s)) + `<mark>${esc(text.slice(s, e + 1))}</mark>`
+      last = e + 1
+    }
+    return out + esc(text.slice(last))
+  }
+
+  function runSearch(q: string) {
+    activeIdx = -1
+    if (!q.trim() || !fuse) {
+      listbox.innerHTML = ''
+      emptyMsg.hidden = true
+      idleMsg.hidden = false
+      return
+    }
+    idleMsg.hidden = true
+    const hits = fuse.search(q, { limit: 8 })
+    if (!hits.length) {
+      listbox.innerHTML = ''
+      emptyMsg.hidden = false
+      return
+    }
+    emptyMsg.hidden = true
+    listbox.innerHTML = hits.map(({ item, matches }) => `
+      <li role="option">
+        <a href="${esc(item.href)}">
+          <div class="result-title">${highlight(item.title, matches as Match[], 'title')}</div>
+          <div class="result-meta">
+            <span class="result-cat">${esc(item.category)}</span>
+            ${item.description ? `<span class="result-desc">${highlight(item.description, matches as Match[], 'description')}</span>` : ''}
+          </div>
+        </a>
+      </li>
+    `).join('')
+  }
+
+  input.addEventListener('input', () => runSearch(input.value))
+
+  // ── Keyboard navigation ────────────────────────────────────────────────
+
+  function items() { return listbox.querySelectorAll<HTMLAnchorElement>('li a') }
+  function setActive(idx: number) {
+    items().forEach((a, i) => {
+      if (i === idx) a.setAttribute('data-active', '')
+      else a.removeAttribute('data-active')
+    })
+  }
+
+  input.addEventListener('keydown', e => {
+    const els = items()
+    if (!els.length) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      activeIdx = Math.min(activeIdx + 1, els.length - 1)
+      setActive(activeIdx)
+      els[activeIdx]?.focus()
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      activeIdx--
+      if (activeIdx < 0) { activeIdx = -1; setActive(-1); input.focus() }
+      else { setActive(activeIdx); els[activeIdx]?.focus() }
+    }
+  })
+
+  // Typing while a result is focused → send focus back to input
+  listbox.addEventListener('keydown', e => {
+    if (e.key.length === 1 || e.key === 'Backspace') {
+      input.focus()
+    } else if (e.key === 'ArrowUp') {
+      const els = items()
+      e.preventDefault()
+      activeIdx--
+      if (activeIdx < 0) { activeIdx = -1; setActive(-1); input.focus() }
+      else { setActive(activeIdx); els[activeIdx]?.focus() }
+    } else if (e.key === 'ArrowDown') {
+      const els = items()
+      e.preventDefault()
+      activeIdx = Math.min(activeIdx + 1, els.length - 1)
+      setActive(activeIdx)
+      els[activeIdx]?.focus()
+    }
+  })
+</script>
