@@ -1,7 +1,7 @@
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a3 as renderComponent, a4 as renderTemplate } from './sequence_BHhiZ0XQ.mjs';
-import { k as getRouteBySlugParam } from './middleware_CiJpb_dm.mjs';
-import { $ as $$Common } from './common_D2U6g9rX.mjs';
+import { k as getRouteBySlugParam } from './middleware_DLs7hMEU.mjs';
+import { $ as $$Common } from './common_B_tRjr2b.mjs';
 
 const prerender = false;
 const $$Index = createComponent(($$result, $$props, $$slots) => {

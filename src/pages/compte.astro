@@ -1,0 +1,284 @@
+---
+import { readFileSync } from 'node:fs'
+import { join, basename } from 'node:path'
+import AppLayout from '../layouts/AppLayout.astro'
+import ThemeSwitcher from '../components/ThemeSwitcher.astro'
+import TeamItLogo from '../components/TeamItLogo.astro'
+import { parseFrontmatter, readOrder, getCategoryDirs, getOrderedFiles, getCategoryLabel, DOCS_PATH } from '../lib/content'
+
+if (!Astro.locals.user) return Astro.redirect('/login')
+const user = Astro.locals.user
+
+const initials = (user.name || user.email || '?').charAt(0).toUpperCase()
+
+type FicheStat = {
+  title:      string
+  category:   string
+  categoryLabel: string
+  href:       string
+  createdAt:  string
+  modifiedAt: string
+  createdBy:  string
+  modifiedBy: string
+}
+
+const savedOrder = readOrder()
+const allFiches: FicheStat[] = []
+
+for (const dir of getCategoryDirs(savedOrder)) {
+  const categoryLabel = getCategoryLabel(dir)
+  for (const file of getOrderedFiles(dir, savedOrder)) {
+    const slug = basename(file).replace(/\.(mdx|md|mdoc)$/, '')
+    try {
+      const fm = parseFrontmatter(readFileSync(join(DOCS_PATH, dir, file), 'utf-8'))
+      allFiches.push({
+        title:         fm.title   || slug,
+        category:      dir,
+        categoryLabel,
+        href:          `/${dir}/${slug}/`,
+        createdAt:     fm.createdAt  || '',
+        modifiedAt:    fm.modifiedAt || '',
+        createdBy:     fm.createdBy  || '',
+        modifiedBy:    fm.modifiedBy || '',
+      })
+    } catch {}
+  }
+}
+
+const userName = user.name || user.email || ''
+
+const myCreated  = allFiches.filter(f => f.createdBy.trim() === userName.trim())
+const myModified = allFiches.filter(f => f.modifiedBy.trim() === userName.trim() && f.modifiedAt !== f.createdAt)
+
+// Stats
+const totalFiches    = allFiches.length
+const totalMyCreated = myCreated.length
+const totalMyMod     = myModified.length
+
+// Last activity
+const lastCreated  = [...myCreated].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]  ?? null
+const lastModified = [...myModified].sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt))[0] ?? null
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const d    = new Date(dateStr)
+  const date = d.toLocaleDateString('fr-CH', { day: 'numeric', month: 'long', year: 'numeric' })
+  if (!dateStr.includes('T')) return date
+  const h = String(d.getHours()).padStart(2, '0')
+  const m = String(d.getMinutes()).padStart(2, '0')
+  return `${date} à ${h}h${m}`
+}
+---
+
+<AppLayout title="Mon compte — Documentation Team IT">
+  <div class="page">
+
+    <header class="top-bar">
+      <a href="/" class="logo-link">
+        <div class="logo-bg"><TeamItLogo height={24} aria-hidden /></div>
+      </a>
+      <nav class="top-nav">
+        <ThemeSwitcher />
+        <a href="/admin" class="nav-link">Gérer les fiches</a>
+        <a href="/logout" class="nav-link muted">Déconnexion</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="container">
+
+        <!-- Profile -->
+        <section class="profile-card">
+          <div class="avatar">{initials}</div>
+          <div class="profile-info">
+            {user.name && <p class="profile-name">{user.name}</p>}
+            <p class="profile-email">{user.email}</p>
+            <a href="/change-password" class="btn btn-secondary btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Modifier le mot de passe
+            </a>
+          </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value">{totalFiches}</span>
+            <span class="stat-label">fiches au total</span>
+          </div>
+          <div class="stat-card accent">
+            <span class="stat-value">{totalMyCreated}</span>
+            <span class="stat-label">créées par moi</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value">{totalMyMod}</span>
+            <span class="stat-label">modifiées par moi</span>
+          </div>
+        </section>
+
+        <!-- Last activity -->
+        {(lastCreated || lastModified) && (
+          <section class="activity-section">
+            <h2 class="section-title">Dernière activité</h2>
+            <div class="activity-list">
+              {lastCreated && (
+                <div class="activity-item">
+                  <span class="activity-badge created">Créée</span>
+                  <a href={lastCreated.href} class="activity-link">{lastCreated.title}</a>
+                  <span class="activity-meta">{lastCreated.categoryLabel} · {formatDate(lastCreated.createdAt)}</span>
+                </div>
+              )}
+              {lastModified && (
+                <div class="activity-item">
+                  <span class="activity-badge modified">Modifiée</span>
+                  <a href={lastModified.href} class="activity-link">{lastModified.title}</a>
+                  <span class="activity-meta">{lastModified.categoryLabel} · {formatDate(lastModified.modifiedAt)}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        <!-- My fiches -->
+        {myCreated.length > 0 && (
+          <section class="fiches-section">
+            <h2 class="section-title">Fiches créées par moi</h2>
+            <div class="fiches-table">
+              {myCreated
+                .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                .map(f => (
+                  <a href={f.href} class="fiche-row">
+                    <span class="fiche-title">{f.title}</span>
+                    <span class="fiche-cat">{f.categoryLabel}</span>
+                    <span class="fiche-date">{formatDate(f.createdAt)}</span>
+                  </a>
+                ))
+              }
+            </div>
+          </section>
+        )}
+
+      </div>
+    </main>
+
+  </div>
+</AppLayout>
+
+<style>
+  .page { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+
+  /* ── Header ── */
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 56px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo-link { line-height: 0; }
+  .logo-bg { background: #fff; border-radius: 4px; padding: 3px 6px; line-height: 0; }
+  .top-nav { display: flex; align-items: center; gap: 1rem; }
+  .nav-link { font-size: 0.8125rem; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.muted { color: var(--subtle); }
+
+  /* ── Layout ── */
+  main { flex: 1; padding: 2.5rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+
+  /* ── Profile card ── */
+  .profile-card {
+    display: flex; align-items: center; gap: 1.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.75rem; padding: 1.75rem;
+  }
+  .avatar {
+    flex-shrink: 0;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.375rem; font-weight: 700;
+  }
+  .profile-info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+  .profile-name  { font-size: 1.0625rem; font-weight: 700; color: var(--text); }
+  .profile-email { font-size: 0.875rem; color: var(--muted); }
+
+  .btn-sm {
+    margin-top: 0.625rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  /* ── Stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.625rem; padding: 1.25rem 1rem;
+    display: flex; flex-direction: column; gap: 0.25rem; align-items: center;
+  }
+  .stat-card.accent { border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); }
+  .stat-value {
+    font-size: 2rem; font-weight: 800; line-height: 1;
+    color: var(--text);
+  }
+  .stat-card.accent .stat-value { color: var(--accent); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); text-align: center; }
+
+  /* ── Sections ── */
+  .section-title {
+    font-size: 0.875rem; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 0.875rem;
+  }
+
+  /* ── Activity ── */
+  .activity-list { display: flex; flex-direction: column; gap: 0.625rem; }
+  .activity-item {
+    display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.5rem; padding: 0.75rem 1rem;
+  }
+  .activity-badge {
+    flex-shrink: 0; font-size: 0.7rem; font-weight: 600;
+    padding: 0.15rem 0.5rem; border-radius: 999px;
+  }
+  .activity-badge.created  { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+  .activity-badge.modified { background: color-mix(in srgb, var(--muted) 12%, transparent); color: var(--muted); }
+  .activity-link { font-size: 0.875rem; font-weight: 500; color: var(--text); text-decoration: none; flex: 1; min-width: 0; }
+  .activity-link:hover { color: var(--accent); }
+  .activity-meta { font-size: 0.75rem; color: var(--subtle); white-space: nowrap; }
+
+  /* ── Fiches table ── */
+  .fiches-table {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.625rem; overflow: hidden;
+  }
+  .fiche-row {
+    display: grid; grid-template-columns: 1fr auto auto;
+    align-items: center; gap: 1rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    text-decoration: none; color: var(--text);
+    transition: background 0.1s;
+  }
+  .fiche-row:last-child { border-bottom: none; }
+  .fiche-row:hover { background: var(--surface-hover); }
+  .fiche-title { font-size: 0.875rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .fiche-row:hover .fiche-title { color: var(--accent); }
+  .fiche-cat  { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  .fiche-date { font-size: 0.75rem; color: var(--subtle); white-space: nowrap; }
+
+  /* ── Responsive ── */
+  @media (max-width: 540px) {
+    .top-bar { padding: 0 1rem; }
+    .profile-card { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.25rem; }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .stat-card { padding: 0.875rem 0.5rem; }
+    .stat-value { font-size: 1.5rem; }
+    .fiche-row { grid-template-columns: 1fr auto; }
+    .fiche-date { display: none; }
+  }
+</style>

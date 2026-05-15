@@ -1,6 +1,6 @@
 let userCollections;
 			try {
-				userCollections = (await import('./content.config_BK8wt4CG.mjs')).collections;
+				userCollections = (await import('./content.config_BgA9uVfe.mjs')).collections;
 			} catch {}
 			const collections = userCollections;
 
