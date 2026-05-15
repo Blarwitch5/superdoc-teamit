@@ -1,8 +1,10 @@
 import type { APIRoute } from 'astro'
 import { mkdirSync, writeFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { jsonResponse } from '../../../lib/api'
 import { DOCS_PATH, readOrder, writeOrder } from '../../../lib/content'
+
+const json = (data: unknown, status = 200) =>
+  new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } })
 
 function slugify(name: string): string {
   return name
@@ -15,24 +17,24 @@ function slugify(name: string): string {
 export const POST: APIRoute = async ({ request }) => {
   let body: { name?: string; description?: string }
   try { body = await request.json() }
-  catch { return jsonResponse({ error: 'Corps JSON invalide.' }, 400) }
+  catch { return json({ error: 'Corps JSON invalide.' }, 400) }
 
   const rawName = (body.name ?? '').trim()
-  if (!rawName) return jsonResponse({ error: 'Le nom est requis.' }, 400)
+  if (!rawName) return json({ error: 'Le nom est requis.' }, 400)
 
   const dir = slugify(rawName)
-  if (!dir) return jsonResponse({ error: 'Nom de catégorie invalide.' }, 400)
+  if (!dir) return json({ error: 'Nom de catégorie invalide.' }, 400)
 
   const categoryPath = join(DOCS_PATH, dir)
 
   // Guard against path traversal (slugify already strips slashes, but be explicit)
   if (!categoryPath.startsWith(DOCS_PATH)) {
-    return jsonResponse({ error: 'Chemin non autorisé.' }, 403)
+    return json({ error: 'Chemin non autorisé.' }, 403)
   }
 
   try {
     statSync(categoryPath)
-    return jsonResponse({ error: `La catégorie « ${dir} » existe déjà.` }, 409)
+    return json({ error: `La catégorie « ${dir} » existe déjà.` }, 409)
   } catch {
     // does not exist — proceed
   }
@@ -49,43 +51,43 @@ export const POST: APIRoute = async ({ request }) => {
     const order = readOrder()
     if (!order.categories.includes(dir)) order.categories.push(dir)
     writeOrder(order)
-    return jsonResponse({ ok: true, dir, label })
+    return json({ ok: true, dir, label })
   } catch {
-    return jsonResponse({ error: 'Erreur lors de la création.' }, 500)
+    return json({ error: 'Erreur lors de la création.' }, 500)
   }
 }
 
 export const DELETE: APIRoute = async ({ request }) => {
   let body: { name?: string }
   try { body = await request.json() }
-  catch { return jsonResponse({ error: 'Corps JSON invalide.' }, 400) }
+  catch { return json({ error: 'Corps JSON invalide.' }, 400) }
 
   const dir = (body.name ?? '').trim()
-  if (!dir) return jsonResponse({ error: 'Le nom est requis.' }, 400)
+  if (!dir) return json({ error: 'Le nom est requis.' }, 400)
 
   const categoryPath = join(DOCS_PATH, dir)
 
   if (!categoryPath.startsWith(DOCS_PATH)) {
-    return jsonResponse({ error: 'Chemin non autorisé.' }, 403)
+    return json({ error: 'Chemin non autorisé.' }, 403)
   }
 
   try {
     statSync(categoryPath)
   } catch {
-    return jsonResponse({ error: 'Catégorie introuvable.' }, 404)
+    return json({ error: 'Catégorie introuvable.' }, 404)
   }
 
   const fiches = readdirSync(categoryPath).filter(
     f => /\.(mdx|md|mdoc)$/.test(f) && !/^index\.(mdx|md|mdoc)$/.test(f)
   )
   if (fiches.length > 0) {
-    return jsonResponse({ error: `Impossible de supprimer : ${fiches.length} fiche(s) dans cette catégorie.` }, 409)
+    return json({ error: `Impossible de supprimer : ${fiches.length} fiche(s) dans cette catégorie.` }, 409)
   }
 
   try {
     rmSync(categoryPath, { recursive: true })
-    return jsonResponse({ ok: true })
+    return json({ ok: true })
   } catch {
-    return jsonResponse({ error: 'Erreur lors de la suppression.' }, 500)
+    return json({ error: 'Erreur lors de la suppression.' }, 500)
   }
 }

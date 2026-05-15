@@ -427,26 +427,8 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
 </style>
 
 <script>
-  // ── User dropdown ────────────────────────────────────────────────
-  const userBtn      = document.getElementById('user-btn')
-  const userDropdown = document.getElementById('user-dropdown')
-  if (userBtn && userDropdown) {
-    userBtn.addEventListener('click', (e) => {
-      e.stopPropagation()
-      const open = userDropdown.classList.toggle('open')
-      userBtn.setAttribute('aria-expanded', String(open))
-    })
-    document.addEventListener('click', () => {
-      userDropdown.classList.remove('open')
-      userBtn.setAttribute('aria-expanded', 'false')
-    })
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        userDropdown.classList.remove('open')
-        userBtn.setAttribute('aria-expanded', 'false')
-      }
-    })
-  }
+  import { initUserDropdown } from '../../scripts/user-dropdown'
+  initUserDropdown()
 
   // ── Inject grip icons ──────────────────────────────────────────────
   const grip = (document.getElementById('grip-icon') as HTMLTemplateElement).content

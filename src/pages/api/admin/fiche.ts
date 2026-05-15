@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync, rmdirSync, readdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { DOCS_PATH, readOrder, writeOrder, parseFrontmatter } from '../../../lib/content'
 

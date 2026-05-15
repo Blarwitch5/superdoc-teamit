@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { j as jsonResponse } from './api_DSxlffQ-.mjs';
 
+const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 const ORDER_PATH = join(process.cwd(), "src/content/docs/_order.json");
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 function isValidSlug(s) {
@@ -12,24 +12,24 @@ const PUT = async ({ request }) => {
   try {
     body = await request.json();
   } catch {
-    return jsonResponse({ error: "Corps JSON invalide." }, 400);
+    return json({ error: "Corps JSON invalide." }, 400);
   }
   if (!Array.isArray(body.categories) || typeof body.fiches !== "object" || body.fiches === null) {
-    return jsonResponse({ error: "Format invalide." }, 400);
+    return json({ error: "Format invalide." }, 400);
   }
   if (!body.categories.every(isValidSlug)) {
-    return jsonResponse({ error: "Nom de catégorie invalide." }, 400);
+    return json({ error: "Nom de catégorie invalide." }, 400);
   }
   for (const [cat, fiches] of Object.entries(body.fiches)) {
     if (!isValidSlug(cat) || !Array.isArray(fiches) || !fiches.every(isValidSlug)) {
-      return jsonResponse({ error: "Format invalide." }, 400);
+      return json({ error: "Format invalide." }, 400);
     }
   }
   try {
     writeFileSync(ORDER_PATH, JSON.stringify(body, null, 2));
-    return jsonResponse({ ok: true });
+    return json({ ok: true });
   } catch {
-    return jsonResponse({ error: "Impossible de sauvegarder l'ordre." }, 500);
+    return json({ error: "Impossible de sauvegarder l'ordre." }, 500);
   }
 };
 

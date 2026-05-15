@@ -354,7 +354,7 @@ async function getStarlightPageFrontmatter(frontmatter) {
   );
 }
 async function getUserDocsSchema() {
-  const userCollections = (await import('./collection-config_D_hgXHQR.mjs')).collections;
+  const userCollections = (await import('./collection-config_BcgMi-uI.mjs')).collections;
   return userCollections?.docs?.schema ?? docsSchema();
 }
 

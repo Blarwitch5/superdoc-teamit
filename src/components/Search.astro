@@ -242,8 +242,6 @@
 </style>
 
 <script>
-  import Fuse from 'fuse.js'
-
   type Entry = { title: string; description: string; category: string; href: string }
   type Match = { key?: string; indices: ReadonlyArray<[number, number]> }
 
@@ -289,7 +287,10 @@
 
   async function loadIndex() {
     try {
-      const res = await fetch('/api/search')
+      const [{ default: Fuse }, res] = await Promise.all([
+        import('fuse.js'),
+        fetch('/api/search'),
+      ])
       if (!res.ok) return
       const data: Entry[] = await res.json()
       fuse = new Fuse(data, {
