@@ -201,7 +201,7 @@ function createGetCollection({
     const hasFilter = typeof filter === "function";
     const store = await globalDataStore.get();
     if (store.hasCollection(collection)) {
-      const { default: imageAssetMap } = await import('./content-assets_DloNRoa4.mjs');
+      const { default: imageAssetMap } = await import('./content-assets_DleWbedO.mjs');
       const result = [];
       for (const rawEntry of store.values(collection)) {
         const data = updateImageReferencesInData(rawEntry.data, rawEntry.filePath, imageAssetMap);
@@ -260,7 +260,7 @@ function createGetEntry({ liveCollections }) {
         console.warn(`Entry ${collection} → ${lookupId} was not found.`);
         return;
       }
-      const { default: imageAssetMap } = await import('./content-assets_DloNRoa4.mjs');
+      const { default: imageAssetMap } = await import('./content-assets_DleWbedO.mjs');
       entry.data = updateImageReferencesInData(entry.data, entry.filePath, imageAssetMap);
       const result = {
         ...entry,
@@ -302,7 +302,7 @@ function warnForPropertyAccess(entry, prop, message) {
 }
 const CONTENT_LAYER_IMAGE_REGEX = /__ASTRO_IMAGE_="([^"]+)"/g;
 async function updateImageReferencesInBody(html, fileName) {
-  const { default: imageAssetMap } = await import('./content-assets_DloNRoa4.mjs');
+  const { default: imageAssetMap } = await import('./content-assets_DleWbedO.mjs');
   const imageObjects = /* @__PURE__ */ new Map();
   const { getImage } = await import('./_virtual_astro_get-image_B9XkHor4.mjs');
   for (const [_full, imagePath] of html.matchAll(CONTENT_LAYER_IMAGE_REGEX)) {

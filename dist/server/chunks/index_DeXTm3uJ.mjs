@@ -1,7 +1,7 @@
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a$ as union, b0 as boolean, b1 as string, b2 as strictObject, b3 as object, b4 as int, b5 as _enum, b6 as record, b7 as number, b8 as never, b9 as _undefined, ba as _null, bb as lazy, bc as date, bd as url, be as custom, a3 as renderComponent, a4 as renderTemplate, a_ as renderSlot, aW as maybeRenderHead, aY as addAttribute, bf as unescapeHTML } from './sequence_BHhiZ0XQ.mjs';
-import { I as Icons, a as I18nBadgeConfigSchema, B as BadgeConfigSchema, H as HeadConfigSchema, u as urlToSlug, s as slugToLocaleData, g as getSidebarFromConfig, b as getSidebar, c as getSiteTitle, d as getToC, e as getSiteTitleHref, f as getPrevNextLinks, h as getHead, p as parseAsyncWithFriendlyErrors, i as parseWithFriendlyErrors, j as attachRouteDataAndRunMiddleware, $ as $$Page } from './middleware_D0OsSPRo.mjs';
-import { s as stripLeadingAndTrailingSlashes, g as getCollectionPathFromRoot, p as project, c as config } from './translations_CBM33ov_.mjs';
+import { I as Icons, a as I18nBadgeConfigSchema, B as BadgeConfigSchema, H as HeadConfigSchema, u as urlToSlug, s as slugToLocaleData, g as getSidebarFromConfig, b as getSidebar, c as getSiteTitle, d as getToC, e as getSiteTitleHref, f as getPrevNextLinks, h as getHead, p as parseAsyncWithFriendlyErrors, i as parseWithFriendlyErrors, j as attachRouteDataAndRunMiddleware, $ as $$Page } from './middleware_DmAnxQsq.mjs';
+import { s as stripLeadingAndTrailingSlashes, g as getCollectionPathFromRoot, p as project, c as config } from './translations_DOv6RBat.mjs';
 import { r as renderScript } from './script_T86Sxpel.mjs';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -354,7 +354,7 @@ async function getStarlightPageFrontmatter(frontmatter) {
   );
 }
 async function getUserDocsSchema() {
-  const userCollections = (await import('./collection-config_DKJFnv-0.mjs')).collections;
+  const userCollections = (await import('./collection-config_D_hgXHQR.mjs')).collections;
   return userCollections?.docs?.schema ?? docsSchema();
 }
 

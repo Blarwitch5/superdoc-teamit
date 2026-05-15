@@ -79,7 +79,8 @@ export default defineConfig({
         SocialIcons: './src/components/HeaderNav.astro',
         Search:      './src/components/Search.astro',
         Sidebar:     './src/components/DynamicSidebar.astro',
-        PageSidebar: './src/components/EditPageSidebar.astro',
+        PageSidebar:      './src/components/EditPageSidebar.astro',
+        MobileMenuFooter: './src/components/MobileMenuFooter.astro',
       },
       // Sidebar is fully managed at runtime by DynamicSidebar.astro
       sidebar: [],

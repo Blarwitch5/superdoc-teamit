@@ -2,37 +2,165 @@
 import Default from '@astrojs/starlight/components/SocialIcons.astro'
 import type { Props } from '@astrojs/starlight/props'
 
-const isLoggedIn = !!Astro.locals.user
+const user      = Astro.locals.user
+const isLoggedIn = !!user
+const initials  = user
+  ? (user.name || user.email || '?').charAt(0).toUpperCase()
+  : '?'
 ---
 
 <Default {...Astro.props}><slot /></Default>
+
 {isLoggedIn && (
   <>
-    <a
-      href="/admin/fiche/"
-      class="text-sm text-white bg-[var(--sl-color-accent)] hover:bg-[var(--sl-color-accent-high)] px-3 py-1 rounded transition-colors font-medium"
-    >
-      + Nouvelle fiche
+    <a href="/admin/fiche/" class="btn-new">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="btn-new-label">Nouvelle fiche</span>
     </a>
-    <a
-      href="/admin"
-      class="text-sm text-[var(--sl-color-gray-2)] hover:text-[var(--sl-color-accent)] transition-colors"
-    >
-      Admin
-    </a>
+
+    <div class="user-menu">
+      <button class="user-btn" id="user-btn" aria-expanded="false" aria-haspopup="true" title="Menu utilisateur">
+        <span class="user-avatar">{initials}</span>
+      </button>
+      <div class="user-dropdown" id="user-dropdown" role="menu">
+        <a href="/admin" role="menuitem">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Gérer les fiches
+        </a>
+        <a href="/change-password" role="menuitem">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mon compte
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="/logout" role="menuitem" class="danger">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Déconnexion
+        </a>
+      </div>
+    </div>
   </>
 )}
-<a
-  href="/change-password"
-  class="text-sm text-[var(--sl-color-gray-2)] hover:text-[var(--sl-color-accent)] transition-colors"
-  title="Changer mon mot de passe"
->
-  Mon compte
-</a>
-<a
-  href="/logout"
-  class="text-sm text-[var(--sl-color-gray-2)] hover:text-[var(--sl-color-accent)] transition-colors"
-  aria-label="Se déconnecter"
->
-  Déconnexion
-</a>
+
+<style>
+  /* ── Bouton nouvelle fiche ── */
+  .btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--sl-color-accent);
+    border-radius: 0.375rem;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-new:hover { background: var(--sl-color-accent-high); }
+
+  @media (max-width: 500px) {
+    .btn-new-label { display: none; }
+    .btn-new { padding: 0.35rem; border-radius: 50%; }
+  }
+
+  /* ── User menu ── */
+  .user-menu {
+    position: relative;
+  }
+
+  @media (max-width: 72rem) {
+    /* Starlight affiche le burger sous ~1152px — cacher l'avatar, le burger suffit */
+    .user-menu { display: none; }
+  }
+
+  .user-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--sl-color-accent);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: 0;
+    transition: opacity 0.15s;
+  }
+  .user-btn:hover .user-avatar { opacity: 0.85; }
+
+  /* ── Dropdown ── */
+  .user-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 170px;
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 100;
+    overflow: hidden;
+    padding: 0.3rem 0;
+  }
+  .user-dropdown.open { display: block; }
+
+  .user-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.875rem;
+    font-size: 0.8125rem;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    transition: background 0.1s, color 0.1s;
+  }
+  .user-dropdown a:hover {
+    background: var(--sl-color-bg-sidebar);
+    color: var(--sl-color-white);
+  }
+  .user-dropdown a.danger { color: var(--sl-color-red, #e85748); }
+  .user-dropdown a.danger:hover { background: rgba(232, 87, 72, 0.08); }
+
+  .dropdown-divider {
+    height: 1px;
+    background: var(--sl-color-hairline);
+    margin: 0.3rem 0;
+  }
+</style>
+
+<script>
+  const btn      = document.getElementById('user-btn')
+  const dropdown = document.getElementById('user-dropdown')
+  if (btn && dropdown) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const open = dropdown.classList.toggle('open')
+      btn.setAttribute('aria-expanded', String(open))
+    })
+    document.addEventListener('click', () => {
+      dropdown.classList.remove('open')
+      btn.setAttribute('aria-expanded', 'false')
+    })
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dropdown.classList.remove('open')
+        btn.setAttribute('aria-expanded', 'false')
+      }
+    })
+  }
+</script>

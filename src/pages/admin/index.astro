@@ -53,20 +53,41 @@ for (const dir of getCategoryDirs(savedOrder)) {
 const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
 ---
 
-<AppLayout title="Administration — Documentation Team IT">
+<AppLayout title="Gérer les fiches — Documentation Team IT">
   <header>
     <div class="header-left">
       <div class="logo-bg">
         <TeamItLogo height={24} aria-hidden />
       </div>
-      <span class="header-title">Administration</span>
+      <span class="header-title">Gérer les fiches</span>
     </div>
     <div class="header-right">
       <ThemeSwitcher />
-      <span class="user-info">{user.name || user.email}</span>
-      <a href="/change-password" class="btn btn-ghost">Mot de passe</a>
-      <a href="/" class="btn btn-ghost">← Docs</a>
-      <a href="/logout" class="btn-logout">Déconnexion</a>
+      <a href="/" class="btn btn-ghost hide-mobile">← Docs</a>
+
+      <!-- User dropdown -->
+      <div class="user-menu">
+        <button class="user-btn" id="user-btn" aria-expanded="false" aria-haspopup="true" title="Menu utilisateur">
+          <span class="user-avatar">{(user.name || user.email || '?').charAt(0).toUpperCase()}</span>
+        </button>
+        <div class="user-dropdown" id="user-dropdown" role="menu">
+          <div class="dropdown-user-name">{user.name || user.email}</div>
+          <div class="dropdown-divider"></div>
+          <a href="/" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Documentation
+          </a>
+          <a href="/change-password" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Mon compte
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="/logout" role="menuitem" class="danger">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Déconnexion
+          </a>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -192,10 +213,58 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
   .header-right { display: flex; align-items: center; gap: 0.75rem; }
   .user-info { font-size: 0.8125rem; color: var(--muted); }
 
-  /* ── Buttons (base → app.css) ── */
-  /* Overrides locaux uniquement */
-  .btn-logout { font-size: 0.8125rem; color: var(--subtle); text-decoration: none; transition: color 0.15s; }
-  .btn-logout:hover { color: var(--muted); }
+  /* ── User dropdown ── */
+  .user-menu { position: relative; }
+
+  .user-btn {
+    display: flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer; padding: 0; border-radius: 50%;
+  }
+  .user-avatar {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 0.75rem; font-weight: 700; font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .user-btn:hover .user-avatar { opacity: 0.85; }
+
+  .user-dropdown {
+    display: none;
+    position: absolute; top: calc(100% + 0.5rem); right: 0;
+    min-width: 180px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.5rem; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    z-index: 100; overflow: hidden; padding: 0.3rem 0;
+  }
+  .user-dropdown.open { display: block; }
+
+  .dropdown-user-name {
+    font-size: 0.75rem; color: var(--subtle);
+    padding: 0.5rem 0.875rem 0.25rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dropdown-divider { height: 1px; background: var(--border); margin: 0.3rem 0; }
+
+  .user-dropdown a {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.875rem; font-size: 0.8125rem;
+    color: var(--muted); text-decoration: none;
+    transition: background 0.1s, color 0.1s;
+  }
+  .user-dropdown a:hover { background: var(--surface-hover); color: var(--text); }
+  .user-dropdown a.danger { color: var(--danger); }
+  .user-dropdown a.danger:hover { background: var(--danger-bg); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .hide-mobile { display: none; }
+    .header-title { display: none; }
+    header { padding: 0 1rem; }
+    main { padding: 1.5rem 1rem; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+    .cat-fields { grid-template-columns: 1fr; }
+  }
 
   /* ── Main ── */
   main { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem; }
@@ -358,6 +427,27 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
 </style>
 
 <script>
+  // ── User dropdown ────────────────────────────────────────────────
+  const userBtn      = document.getElementById('user-btn')
+  const userDropdown = document.getElementById('user-dropdown')
+  if (userBtn && userDropdown) {
+    userBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const open = userDropdown.classList.toggle('open')
+      userBtn.setAttribute('aria-expanded', String(open))
+    })
+    document.addEventListener('click', () => {
+      userDropdown.classList.remove('open')
+      userBtn.setAttribute('aria-expanded', 'false')
+    })
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        userDropdown.classList.remove('open')
+        userBtn.setAttribute('aria-expanded', 'false')
+      }
+    })
+  }
+
   // ── Inject grip icons ──────────────────────────────────────────────
   const grip = (document.getElementById('grip-icon') as HTMLTemplateElement).content
   document.querySelectorAll('.drag-handle').forEach(el => {
