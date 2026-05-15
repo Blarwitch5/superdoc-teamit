@@ -427,14 +427,16 @@ const $$DraftContentNotice = createComponent(($$result, $$props, $$slots) => {
 const $$FicheFooter = createComponent(($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$props, $$slots);
   Astro2.self = $$FicheFooter;
-  const { entry } = Astro2.props;
-  const isLoggedIn = !!Astro2.locals.user;
+  const { entry } = Astro2.locals.starlightRoute;
   const data = entry?.data;
-  const isFiche = entry?.id && !/\/index$/.test(entry.id) && entry.id.includes("/");
-  if (!isFiche) return;
-  function val(s) {
-    return s?.trim() ?? "";
-  }
+  const entryId = entry?.id ?? "";
+  const isFiche = entryId.includes("/") && !/\/index$/.test(entryId);
+  const createdBy = data?.createdBy?.trim() ?? "";
+  const createdAt = data?.createdAt?.trim() ?? "";
+  const modifiedBy = data?.modifiedBy?.trim() ?? "";
+  const modifiedAt = data?.modifiedAt?.trim() ?? "";
+  const hasCreated = createdBy.length > 0;
+  const hasModified = modifiedBy.length > 0 && modifiedAt !== createdAt;
   function formatDate(dateStr) {
     const d = new Date(dateStr);
     const date = d.toLocaleDateString("fr-CH", { day: "numeric", month: "long", year: "numeric" });
@@ -443,15 +445,7 @@ const $$FicheFooter = createComponent(($$result, $$props, $$slots) => {
     const m = String(d.getMinutes()).padStart(2, "0");
     return `${date} à ${h}h${m}`;
   }
-  const createdBy = val(data?.createdBy);
-  const createdAt = val(data?.createdAt);
-  const modifiedBy = val(data?.modifiedBy);
-  const modifiedAt = val(data?.modifiedAt);
-  const hasCreated = !!createdBy;
-  const hasModified = !!modifiedBy && modifiedAt !== createdAt;
-  const slashIdx = entry.id.indexOf("/");
-  isLoggedIn ? `/admin/fiche/?cat=${entry.id.slice(0, slashIdx)}&slug=${entry.id.slice(slashIdx + 1)}` : null;
-  return renderTemplate`${(hasCreated || hasModified) && renderTemplate`${maybeRenderHead()}<footer class="fiche-footer astro-wslmb6s7">${hasCreated && renderTemplate`<p class="astro-wslmb6s7">
+  return renderTemplate`${isFiche && (hasCreated || hasModified) && renderTemplate`${maybeRenderHead()}<footer class="fiche-footer astro-wslmb6s7">${hasCreated && renderTemplate`<p class="astro-wslmb6s7">
 Créé par <strong class="astro-wslmb6s7">${createdBy}</strong>${createdAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(createdAt)}` })}`}</p>`}${hasModified && renderTemplate`<p class="astro-wslmb6s7">
 Modifié par <strong class="astro-wslmb6s7">${modifiedBy}</strong>${modifiedAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(modifiedAt)}` })}`}</p>`}</footer>`}`;
 }, "/Users/blarwitch/Sites/teamit/teamit-superdoc/src/components/FicheFooter.astro", void 0);
@@ -1577,7 +1571,7 @@ const makeAPI = (data) => {
   };
 };
 
-const api = makeAPI([["src/content/docs/_order.json",1778831990000],["src/content/docs/administratif/creation-acces-infomaniak.mdx",1778592791000],["src/content/docs/administratif/depart-collaborateur.mdx",1778592791000],["src/content/docs/administratif/index.mdx",1778592791000],["src/content/docs/administratif/onboarding-nouveau-collaborateur.mdx",1778592791000],["src/content/docs/email/configuration-iphone.mdx",1778592791000],["src/content/docs/email/configuration-outlook.mdx",1778592791000],["src/content/docs/email/creation-adresse-mail.mdx",1778592791000],["src/content/docs/email/index.mdx",1778592791000],["src/content/docs/installation/configuration-vpn.mdx",1778592791000],["src/content/docs/installation/imprimante-reseau.mdx",1778592791000],["src/content/docs/installation/index.mdx",1778592791000],["src/content/docs/installation/nouveau-poste-windows.mdx",1778592791000],["src/content/docs/serveur/acces-ftp-sftp.mdx",1778592791000],["src/content/docs/serveur/creation-base-de-donnees.mdx",1778592791000],["src/content/docs/serveur/index.mdx",1778592791000],["src/content/docs/serveur/sauvegarde-site.mdx",1778592791000],["src/content/docs/web/certificat-ssl.mdx",1778592791000],["src/content/docs/web/creation-hebergement-infomaniak.mdx",1778592791000],["src/content/docs/web/deploiement-git.mdx",1778592791000],["src/content/docs/web/index.mdx",1778592791000],["src/content/docs/index.mdx",1778223390000],["src/content/docs/administratif/index.md",1778166027000],["src/content/docs/email/index.md",1778166027000],["src/content/docs/installation/index.md",1778166027000],["src/content/docs/serveur/index.md",1778166027000],["src/content/docs/web/index.md",1778166027000],["src/content/docs/guides/example.md",1777619020000],["src/content/docs/reference/example.md",1777619020000]]);const getNewestCommitDate = api.getNewestCommitDate;
+const api = makeAPI([["src/content/docs/administratif/creation-acces-infomaniak.mdx",1778847965000],["src/content/docs/administratif/depart-collaborateur.mdx",1778847965000],["src/content/docs/administratif/onboarding-nouveau-collaborateur.mdx",1778847965000],["src/content/docs/email/configuration-iphone.mdx",1778847965000],["src/content/docs/email/configuration-outlook.mdx",1778847965000],["src/content/docs/email/creation-adresse-mail.mdx",1778847965000],["src/content/docs/installation/configuration-vpn.mdx",1778847965000],["src/content/docs/installation/imprimante-reseau.mdx",1778847965000],["src/content/docs/installation/nouveau-poste-windows.mdx",1778847965000],["src/content/docs/serveur/acces-ftp-sftp.mdx",1778847965000],["src/content/docs/serveur/creation-base-de-donnees.mdx",1778847965000],["src/content/docs/serveur/sauvegarde-site.mdx",1778847965000],["src/content/docs/web/certificat-ssl.mdx",1778847965000],["src/content/docs/web/creation-hebergement-infomaniak.mdx",1778847965000],["src/content/docs/web/deploiement-git.mdx",1778847965000],["src/content/docs/_order.json",1778831990000],["src/content/docs/administratif/index.mdx",1778592791000],["src/content/docs/email/index.mdx",1778592791000],["src/content/docs/installation/index.mdx",1778592791000],["src/content/docs/serveur/index.mdx",1778592791000],["src/content/docs/web/index.mdx",1778592791000],["src/content/docs/index.mdx",1778223390000],["src/content/docs/administratif/index.md",1778166027000],["src/content/docs/email/index.md",1778166027000],["src/content/docs/installation/index.md",1778166027000],["src/content/docs/serveur/index.md",1778166027000],["src/content/docs/web/index.md",1778166027000],["src/content/docs/guides/example.md",1777619020000],["src/content/docs/reference/example.md",1777619020000]]);const getNewestCommitDate = api.getNewestCommitDate;
 
 const version = "0.38.4";
 
