@@ -3,8 +3,7 @@ import { a3 as renderComponent, a4 as renderTemplate, aW as maybeRenderHead, aY 
 import { r as renderScript } from './script_T86Sxpel.mjs';
 import { join, basename } from 'node:path';
 import { readFileSync, readdirSync } from 'node:fs';
-import { $ as $$AppLayout, a as $$TeamItLogo } from './TeamItLogo_UjPu7uxY.mjs';
-import { $ as $$ThemeSwitcher } from './ThemeSwitcher_Cjog_WEl.mjs';
+import { $ as $$AppLayout, a as $$TeamItLogo, b as $$ThemeSwitcher } from './TeamItLogo_COs6I0mQ.mjs';
 import { r as readOrder, g as getCategoryDirs, D as DOCS_PATH, p as parseFrontmatter } from './content_ChDt9Z8_.mjs';
 
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {

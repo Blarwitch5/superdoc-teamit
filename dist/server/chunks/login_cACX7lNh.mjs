@@ -1,8 +1,7 @@
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a3 as renderComponent, a4 as renderTemplate, aW as maybeRenderHead } from './sequence_BHhiZ0XQ.mjs';
 import { a as auth } from './auth_DnJXfvn4.mjs';
-import { $ as $$AppLayout, a as $$TeamItLogo } from './TeamItLogo_UjPu7uxY.mjs';
-import { $ as $$ThemeSwitcher } from './ThemeSwitcher_Cjog_WEl.mjs';
+import { $ as $$AppLayout, b as $$ThemeSwitcher, a as $$TeamItLogo } from './TeamItLogo_COs6I0mQ.mjs';
 
 const $$Login = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$props, $$slots);

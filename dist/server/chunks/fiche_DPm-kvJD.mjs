@@ -2,8 +2,7 @@ import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a4 as renderTemplate, aV as defineScriptVars, a3 as renderComponent, aW as maybeRenderHead, aX as Fragment, aY as addAttribute } from './sequence_BHhiZ0XQ.mjs';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { $ as $$AppLayout, a as $$TeamItLogo } from './TeamItLogo_UjPu7uxY.mjs';
-import { $ as $$ThemeSwitcher } from './ThemeSwitcher_Cjog_WEl.mjs';
+import { $ as $$AppLayout, a as $$TeamItLogo, b as $$ThemeSwitcher } from './TeamItLogo_COs6I0mQ.mjs';
 import { D as DOCS_PATH, p as parseFrontmatter, r as readOrder, g as getCategoryDirs, a as getCategoryLabel } from './content_ChDt9Z8_.mjs';
 
 var __freeze = Object.freeze;

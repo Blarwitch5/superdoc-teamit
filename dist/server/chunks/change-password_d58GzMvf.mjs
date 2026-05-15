@@ -1,6 +1,6 @@
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a3 as renderComponent, a4 as renderTemplate, aW as maybeRenderHead } from './sequence_BHhiZ0XQ.mjs';
-import { $ as $$AppLayout, a as $$TeamItLogo } from './TeamItLogo_UjPu7uxY.mjs';
+import { $ as $$AppLayout, a as $$TeamItLogo, b as $$ThemeSwitcher } from './TeamItLogo_COs6I0mQ.mjs';
 import { a as auth } from './auth_DnJXfvn4.mjs';
 
 const $$ChangePassword = createComponent(async ($$result, $$props, $$slots) => {
@@ -31,7 +31,7 @@ const $$ChangePassword = createComponent(async ($$result, $$props, $$slots) => {
       }
     }
   }
-  return renderTemplate`${renderComponent($$result, "AppLayout", $$AppLayout, { "title": "Changer le mot de passe — Documentation Team IT", "class": "astro-vbnpqbnz" }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="page astro-vbnpqbnz"> <header class="top-bar astro-vbnpqbnz"> <a href="/" class="logo-link astro-vbnpqbnz"> <div class="logo-bg astro-vbnpqbnz">${renderComponent($$result2, "TeamItLogo", $$TeamItLogo, { "height": 24, "aria-hidden": true, "class": "astro-vbnpqbnz" })}</div> </a> <nav class="top-nav astro-vbnpqbnz"> <a href="/admin" class="nav-link astro-vbnpqbnz">Gérer les fiches</a> <a href="/logout" class="nav-link muted astro-vbnpqbnz">Déconnexion</a> </nav> </header> <main class="astro-vbnpqbnz"> <div class="card astro-vbnpqbnz"> <h1 class="card-title astro-vbnpqbnz">Changer le mot de passe</h1> <p class="card-sub astro-vbnpqbnz">${user.name || user.email}</p> ${success ? renderTemplate`<div class="success-box astro-vbnpqbnz">
+  return renderTemplate`${renderComponent($$result, "AppLayout", $$AppLayout, { "title": "Changer le mot de passe — Documentation Team IT", "class": "astro-vbnpqbnz" }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="page astro-vbnpqbnz"> <header class="top-bar astro-vbnpqbnz"> <a href="/" class="logo-link astro-vbnpqbnz"> <div class="logo-bg astro-vbnpqbnz">${renderComponent($$result2, "TeamItLogo", $$TeamItLogo, { "height": 24, "aria-hidden": true, "class": "astro-vbnpqbnz" })}</div> </a> <nav class="top-nav astro-vbnpqbnz"> ${renderComponent($$result2, "ThemeSwitcher", $$ThemeSwitcher, { "class": "astro-vbnpqbnz" })} <a href="/admin" class="nav-link astro-vbnpqbnz">Gérer les fiches</a> <a href="/logout" class="nav-link muted astro-vbnpqbnz">Déconnexion</a> </nav> </header> <main class="astro-vbnpqbnz"> <div class="card astro-vbnpqbnz"> <h1 class="card-title astro-vbnpqbnz">Changer le mot de passe</h1> <p class="card-sub astro-vbnpqbnz">${user.name || user.email}</p> ${success ? renderTemplate`<div class="success-box astro-vbnpqbnz">
 Mot de passe modifié avec succès.
 <a href="/" class="astro-vbnpqbnz">Retour à la documentation →</a> </div>` : renderTemplate`<form method="POST" class="astro-vbnpqbnz"> ${error && renderTemplate`<p class="error-box astro-vbnpqbnz" role="alert">${error}</p>`} <label class="astro-vbnpqbnz">
 Mot de passe actuel
