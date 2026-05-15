@@ -1,7 +1,7 @@
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a3 as renderComponent, a4 as renderTemplate } from './sequence_BHhiZ0XQ.mjs';
 import { r as renderEntry } from './translations_DOv6RBat.mjs';
-import { l as getRoute, j as attachRouteDataAndRunMiddleware, m as useRouteData, $ as $$Page } from './middleware_CAAbxKZ8.mjs';
+import { l as getRoute, j as attachRouteDataAndRunMiddleware, m as useRouteData, $ as $$Page } from './middleware_NeIAgn14.mjs';
 
 const $$Common = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$props, $$slots);

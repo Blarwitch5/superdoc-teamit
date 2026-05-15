@@ -2,8 +2,8 @@ import { existsSync, unlinkSync, mkdirSync, writeFileSync, readFileSync } from '
 import { join } from 'node:path';
 import { D as DOCS_PATH, r as readOrder, w as writeOrder, p as parseFrontmatter } from './content_ChDt9Z8_.mjs';
 
-function todayISO() {
-  return (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+function nowISO() {
+  return (/* @__PURE__ */ new Date()).toISOString();
 }
 function slugify(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -31,7 +31,7 @@ const POST = async ({ request, locals }) => {
   if (existsSync(filePath)) {
     return new Response(JSON.stringify({ error: `Une fiche « ${slug} » existe déjà dans cette catégorie.` }), { status: 409, headers: { "Content-Type": "application/json" } });
   }
-  const today = todayISO();
+  const today = nowISO();
   const userName = locals.user.name ?? locals.user.email ?? "Inconnu";
   const frontmatter = `---
 title: ${title}
@@ -92,7 +92,7 @@ const PUT = async ({ request, locals }) => {
   }
   const oldRaw = readFileSync(oldPath, "utf-8");
   const oldFm = parseFrontmatter(oldRaw);
-  const today = todayISO();
+  const today = nowISO();
   const userName = locals.user.name ?? locals.user.email ?? "Inconnu";
   const desc = (body.description ?? "").trim();
   const subcat = (body.subcategory ?? "").trim();

@@ -432,11 +432,12 @@ const $$FicheFooter = createComponent(($$result, $$props, $$slots) => {
   const data = entry?.data;
   function formatDate(dateStr) {
     if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("fr-CH", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
+    const d = new Date(dateStr);
+    const date = d.toLocaleDateString("fr-CH", { day: "numeric", month: "long", year: "numeric" });
+    if (!dateStr.includes("T")) return date;
+    const h = String(d.getHours()).padStart(2, "0");
+    const m = String(d.getMinutes()).padStart(2, "0");
+    return `${date} à ${h}h${m}`;
   }
   const hasMetadata = data?.createdBy || data?.modifiedBy;
   const hasTaxonomy = data?.category || data?.subcategory;

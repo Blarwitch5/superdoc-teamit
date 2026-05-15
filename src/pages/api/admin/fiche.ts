@@ -3,8 +3,8 @@ import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync, readdir
 import { join } from 'node:path'
 import { DOCS_PATH, readOrder, writeOrder, parseFrontmatter } from '../../../lib/content'
 
-function todayISO() {
-  return new Date().toISOString().split('T')[0]
+function nowISO() {
+  return new Date().toISOString()
 }
 
 function slugify(str: string): string {
@@ -43,7 +43,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: `Une fiche « ${slug} » existe déjà dans cette catégorie.` }), { status: 409, headers: { 'Content-Type': 'application/json' } })
   }
 
-  const today = todayISO()
+  const today = nowISO()
   const userName = locals.user.name ?? locals.user.email ?? 'Inconnu'
 
   const frontmatter = `---
@@ -120,7 +120,7 @@ export const PUT: APIRoute = async ({ request, locals }) => {
   const oldRaw = readFileSync(oldPath, 'utf-8')
   const oldFm  = parseFrontmatter(oldRaw)
 
-  const today    = todayISO()
+  const today    = nowISO()
   const userName = locals.user.name ?? locals.user.email ?? 'Inconnu'
   const desc     = (body.description ?? '').trim()
   const subcat   = (body.subcategory ?? '').trim()
