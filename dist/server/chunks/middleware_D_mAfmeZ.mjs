@@ -430,8 +430,12 @@ const $$FicheFooter = createComponent(($$result, $$props, $$slots) => {
   const { entry } = Astro2.props;
   const isLoggedIn = !!Astro2.locals.user;
   const data = entry?.data;
+  const isFiche = entry?.id && !/\/index$/.test(entry.id) && entry.id.includes("/");
+  if (!isFiche) return;
+  function val(s) {
+    return s?.trim() ?? "";
+  }
   function formatDate(dateStr) {
-    if (!dateStr) return "";
     const d = new Date(dateStr);
     const date = d.toLocaleDateString("fr-CH", { day: "numeric", month: "long", year: "numeric" });
     if (!dateStr.includes("T")) return date;
@@ -439,22 +443,17 @@ const $$FicheFooter = createComponent(($$result, $$props, $$slots) => {
     const m = String(d.getMinutes()).padStart(2, "0");
     return `${date} à ${h}h${m}`;
   }
-  const hasMetadata = data?.createdBy || data?.modifiedBy;
-  const hasTaxonomy = data?.category || data?.subcategory;
-  const wasModified = data?.modifiedAt && data.modifiedAt !== data?.createdAt;
-  const editUrl = (() => {
-    if (!entry?.id || /\/index$/.test(entry.id)) return null;
-    const slashIdx = entry.id.indexOf("/");
-    if (slashIdx === -1) return null;
-    const cat = entry.id.slice(0, slashIdx);
-    const slug = entry.id.slice(slashIdx + 1);
-    return `/admin/fiche/?cat=${cat}&slug=${slug}`;
-  })();
-  return renderTemplate`${(hasTaxonomy || hasMetadata || isLoggedIn && editUrl) && renderTemplate`${maybeRenderHead()}<footer class="mt-12 border-t border-[var(--sl-color-hairline)] pt-6 text-sm text-[var(--sl-color-gray-3)]">${(data?.category || data?.subcategory) && renderTemplate`<p class="mb-3"><span class="text-[var(--sl-color-gray-3)]">${data.category}</span>${data.subcategory && renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result2) => renderTemplate` &rsaquo; <span class="text-[var(--sl-color-gray-3)]">${data.subcategory}</span>` })}`}</p>`}${data?.createdBy && renderTemplate`<p>
-Créé par <strong class="text-[var(--sl-color-text)]">${data.createdBy}</strong>${data.createdAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result2) => renderTemplate` le ${formatDate(data.createdAt)}` })}`}</p>`}${data?.modifiedBy && wasModified && renderTemplate`<p>
-Dernière modification par <strong class="text-[var(--sl-color-text)]">${data.modifiedBy}</strong>${data.modifiedAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result2) => renderTemplate` le ${formatDate(data.modifiedAt)}` })}`}</p>`}${isLoggedIn && editUrl && renderTemplate`<a${addAttribute(editUrl, "href")} class="mt-4 inline-block text-xs text-[var(--sl-color-gray-3)] hover:text-[var(--sl-color-accent)] transition-colors">
-Modifier cette fiche
-</a>`}</footer>`}`;
+  const createdBy = val(data?.createdBy);
+  const createdAt = val(data?.createdAt);
+  const modifiedBy = val(data?.modifiedBy);
+  const modifiedAt = val(data?.modifiedAt);
+  const hasCreated = !!createdBy;
+  const hasModified = !!modifiedBy && modifiedAt !== createdAt;
+  const slashIdx = entry.id.indexOf("/");
+  isLoggedIn ? `/admin/fiche/?cat=${entry.id.slice(0, slashIdx)}&slug=${entry.id.slice(slashIdx + 1)}` : null;
+  return renderTemplate`${(hasCreated || hasModified) && renderTemplate`${maybeRenderHead()}<footer class="fiche-footer astro-wslmb6s7">${hasCreated && renderTemplate`<p class="astro-wslmb6s7">
+Créé par <strong class="astro-wslmb6s7">${createdBy}</strong>${createdAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(createdAt)}` })}`}</p>`}${hasModified && renderTemplate`<p class="astro-wslmb6s7">
+Modifié par <strong class="astro-wslmb6s7">${modifiedBy}</strong>${modifiedAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(modifiedAt)}` })}`}</p>`}</footer>`}`;
 }, "/Users/blarwitch/Sites/teamit/teamit-superdoc/src/components/FicheFooter.astro", void 0);
 
 const $$Head = createComponent(($$result, $$props, $$slots) => {

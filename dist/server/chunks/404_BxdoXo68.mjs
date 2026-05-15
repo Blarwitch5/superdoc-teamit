@@ -1,6 +1,6 @@
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
 import { a3 as renderComponent, a4 as renderTemplate } from './sequence_BHhiZ0XQ.mjs';
-import { $ as $$Common } from './common_CWO5tmo1.mjs';
+import { $ as $$Common } from './common_S05VZfTL.mjs';
 
 const $$404$1 = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`${renderComponent($$result, "CommonPage", $$Common, {})}`;
