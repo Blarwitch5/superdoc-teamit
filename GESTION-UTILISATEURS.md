@@ -6,12 +6,17 @@ La création de comptes est **réservée à l'administrateur** et se fait unique
 
 ## Créer un utilisateur
 
-Se connecter au serveur Infomaniak (SSH), puis depuis le dossier du projet :
+Se connecter au serveur Infomaniak (SSH), puis :
 
 ```bash
 cd /srv/customer/sites/superdoc.team-it.ch
-/srv/customer/.npm-global/bin/pnpm create-user "Prénom Nom" email@team-it.ch motdepasse
+pnpm create-user "Prénom Nom" email@team-it.ch 'motdepasse'
 ```
+
+> **Note :** Si `pnpm` n'est pas trouvé, préfixer la commande avec le chemin complet :
+> `/srv/customer/.npm-global/bin/pnpm create-user ...`
+
+> **Note :** Encadrer le mot de passe avec des apostrophes simples `'...'` s'il contient des caractères spéciaux (`!`, `$`, `@`, etc.).
 
 **Règles :**
 - Le mot de passe doit contenir au moins 8 caractères.
@@ -19,7 +24,7 @@ cd /srv/customer/sites/superdoc.team-it.ch
 
 **Exemple :**
 ```bash
-/srv/customer/.npm-global/bin/pnpm create-user "Marie Dupont" marie.dupont@team-it.ch Sup3rS3cret!
+pnpm create-user "Marie Dupont" marie.dupont@team-it.ch 'Sup3rS3cret!'
 ```
 
 ---
