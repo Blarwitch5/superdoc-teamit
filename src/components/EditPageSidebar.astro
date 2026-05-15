@@ -7,9 +7,14 @@ const { entry, toc } = Astro.locals.starlightRoute
 const isLoggedIn = !!Astro.locals.user
 
 // Show edit button for any fiche (non-index) entry when logged in
-const editUrl = isLoggedIn && entry?.id && !/\/index$/.test(entry.id)
-  ? `/keystatic/collection/fiches/item/${encodeURIComponent(entry.id)}`
-  : null
+const editUrl = (() => {
+  if (!isLoggedIn || !entry?.id || /\/index$/.test(entry.id)) return null
+  const slashIdx = entry.id.indexOf('/')
+  if (slashIdx === -1) return null
+  const cat  = entry.id.slice(0, slashIdx)
+  const slug = entry.id.slice(slashIdx + 1)
+  return `/admin/fiche/?cat=${cat}&slug=${slug}`
+})()
 
 const hasRightSidebar = toc || editUrl
 ---

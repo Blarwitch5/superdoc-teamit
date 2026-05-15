@@ -1,17 +1,24 @@
-import { $ as defineMiddleware, aQ as AstroUserError, aa as sequence } from './chunks/sequence_DUL7TRkU.mjs';
-import { a as auth } from './chunks/auth_CPMd3n14.mjs';
-import { u as useTranslations } from './chunks/translations_Bzfg-7-g.mjs';
+import { $ as defineMiddleware, aQ as AstroUserError, aa as sequence } from './chunks/sequence_BHhiZ0XQ.mjs';
+import { a as auth } from './chunks/auth_DnJXfvn4.mjs';
+import { u as useTranslations } from './chunks/translations_CBM33ov_.mjs';
 
 const PUBLIC_PATHS = ["/login", "/api/auth"];
 const onRequest$2 = defineMiddleware(async (context, next) => {
   const pathname = new URL(context.request.url).pathname;
+  if (pathname === "/api/auth/sign-up/email") {
+    return new Response(JSON.stringify({ error: "Inscription désactivée." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
   if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
     context.locals.user = null;
     context.locals.session = null;
     return next();
   }
   if (!pathname.endsWith("/") && !pathname.startsWith("/api/") && !pathname.startsWith("/keystatic") && !/\.[a-zA-Z0-9]+$/.test(pathname)) {
-    return context.redirect(pathname + "/", 301);
+    const search = new URL(context.request.url).search;
+    return context.redirect(pathname + "/" + search, 301);
   }
   const session = await auth.api.getSession({ headers: context.request.headers });
   if (!session) {
@@ -25,6 +32,10 @@ const onRequest$2 = defineMiddleware(async (context, next) => {
   }
   context.locals.user = session.user;
   context.locals.session = session.session;
+  if (pathname.startsWith("/keystatic")) {
+    const isAllowed = /^\/keystatic\/collection\/[^/]+\/item\/.+/.test(pathname) || /^\/keystatic\/collection\/[^/]+\/create$/.test(pathname);
+    if (!isAllowed) return context.redirect("/admin");
+  }
   return next();
 });
 

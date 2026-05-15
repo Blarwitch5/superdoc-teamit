@@ -48,16 +48,21 @@ function keystaticWithCustomApi() {
 export default defineConfig({
   site: 'https://superdoc.team-it.ch',
   output: 'server',
+  security: { checkOrigin: false },
   trailingSlash: 'ignore',
   adapter: node({ mode: 'standalone' }),
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    resolve: {
+      dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
   },
   integrations: [
     react(),
     starlight({
       prerender: false,
       title: 'Documentation Team IT',
+      favicon: '/favicon.svg',
       social: [],
       logo: {
         light: './src/assets/logo-light.svg',

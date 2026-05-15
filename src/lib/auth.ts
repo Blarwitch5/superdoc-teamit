@@ -8,6 +8,9 @@ const env = (key: string) => process.env[key]
 const dbPath = join(process.cwd(), 'auth.db')
 const sqlite = new Database(dbPath)
 
+const siteUrl = env('SITE_URL') ?? 'http://localhost:4321'
+const isHttps = siteUrl.startsWith('https')
+
 export const auth = betterAuth({
   database: {
     dialect: new SqliteDialect({ database: sqlite }),
@@ -15,5 +18,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: { enabled: true },
   secret: env('AUTH_SECRET'),
-  baseURL: env('SITE_URL') ?? 'http://localhost:4321',
+  baseURL: siteUrl,
+  advanced: {
+    useSecureCookies: isHttps,
+  },
 })

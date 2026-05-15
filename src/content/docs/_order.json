@@ -4,7 +4,8 @@
     "administratif",
     "installation",
     "serveur",
-    "web"
+    "web",
+    "testtttttiiiiiii"
   ],
   "fiches": {
     "email": [
@@ -31,6 +32,7 @@
       "certificat-ssl",
       "creation-hebergement-infomaniak",
       "deploiement-git"
-    ]
+    ],
+    "testtttttiiiiiii": []
   }
 }

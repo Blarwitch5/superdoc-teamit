@@ -27,9 +27,14 @@ const hasTaxonomy = data?.category || data?.subcategory
 const wasModified = data?.modifiedAt && data.modifiedAt !== data?.createdAt
 
 // Show edit link for any fiche (non-index) entry when logged in
-const editUrl = entry?.id && !/\/index$/.test(entry.id)
-  ? `/keystatic/collection/fiches/item/${encodeURIComponent(entry.id)}`
-  : null
+const editUrl = (() => {
+  if (!entry?.id || /\/index$/.test(entry.id)) return null
+  const slashIdx = entry.id.indexOf('/')
+  if (slashIdx === -1) return null
+  const cat  = entry.id.slice(0, slashIdx)
+  const slug = entry.id.slice(slashIdx + 1)
+  return `/admin/fiche/?cat=${cat}&slug=${slug}`
+})()
 ---
 
 {(hasTaxonomy || hasMetadata || (isLoggedIn && editUrl)) && (

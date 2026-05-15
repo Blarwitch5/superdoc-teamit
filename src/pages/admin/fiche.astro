@@ -1,0 +1,557 @@
+---
+export const prerender = false
+import { readFileSync, existsSync } from 'node:fs'
+import { join } from 'node:path'
+import AppLayout from '../../layouts/AppLayout.astro'
+import ThemeSwitcher from '../../components/ThemeSwitcher.astro'
+import TeamItLogo from '../../components/TeamItLogo.astro'
+import { parseFrontmatter, readOrder, getCategoryDirs, getCategoryLabel, DOCS_PATH } from '../../lib/content'
+
+if (!Astro.locals.user) return Astro.redirect('/login')
+
+const editCat  = Astro.url.searchParams.get('cat') ?? ''
+const editSlug = Astro.url.searchParams.get('slug') ?? ''
+const isEdit   = editCat !== '' && editSlug !== ''
+
+let initialTitle   = ''
+let initialDesc    = ''
+let initialSubcat  = ''
+let initialContent = ''
+let notFound       = false
+
+if (isEdit) {
+  const filePath = join(DOCS_PATH, editCat, `${editSlug}.mdx`)
+  if (existsSync(filePath)) {
+    const raw = readFileSync(filePath, 'utf-8')
+    const fm  = parseFrontmatter(raw)
+    initialTitle   = fm.title       ?? editSlug
+    initialDesc    = fm.description ?? ''
+    initialSubcat  = fm.subcategory ?? ''
+    const bodyMatch = /^---[\s\S]*?---\r?\n?([\s\S]*)$/.exec(raw)
+    initialContent = bodyMatch ? bodyMatch[1] : ''
+  } else {
+    notFound = true
+  }
+}
+
+const order      = readOrder()
+const dirs       = getCategoryDirs(order)
+const categories = dirs.map(dir => ({ dir, label: getCategoryLabel(dir) }))
+---
+
+<AppLayout title={`${isEdit ? 'Modifier' : 'Nouvelle fiche'} · Admin Team IT`}>
+
+  {notFound ? (
+    <main class="not-found">
+      <p>Fiche introuvable : <code>{editCat}/{editSlug}</code></p>
+      <a href="/admin" class="btn btn-primary">← Retour à l'admin</a>
+    </main>
+  ) : (
+    <>
+      <!-- ── Header ── -->
+      <header>
+        <div class="header-left">
+          <div class="logo-bg"><TeamItLogo height={24} aria-hidden /></div>
+          <nav class="breadcrumb">
+            <a href="/admin">Admin</a>
+            <span class="sep">›</span>
+            <span id="header-title">{isEdit ? initialTitle : 'Nouvelle fiche'}</span>
+          </nav>
+        </div>
+        <div class="header-right">
+          <span class="dirty-badge" id="dirty-badge" title="Modifications non enregistrées">●</span>
+          <ThemeSwitcher />
+          {isEdit && (
+            <a href={`/${editCat}/${editSlug}/`} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+              Voir ↗
+            </a>
+          )}
+          <a href="/admin" class="btn btn-ghost btn-sm">Annuler</a>
+          <button class="btn btn-primary btn-sm" id="save-btn">
+            {isEdit ? 'Enregistrer' : 'Créer la fiche'}
+          </button>
+        </div>
+      </header>
+
+      <!-- ── Error banner ── -->
+      <div class="error-banner" id="error-banner" role="alert">
+        <span id="error-text"></span>
+        <button id="error-close" aria-label="Fermer">✕</button>
+      </div>
+
+      <main>
+        <div class="editor-wrap">
+
+          <!-- ── Panneau métadonnées ── -->
+          <aside class="editor-meta">
+            <div class="meta-fields">
+
+              <div class="form-field">
+                <label for="fiche-title">Titre <span class="required">*</span></label>
+                <input
+                  class="app-input"
+                  type="text"
+                  id="fiche-title"
+                  value={initialTitle}
+                  placeholder="ex : Configuration DNS"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="fiche-cat">Catégorie <span class="required">*</span></label>
+                <select class="app-input" id="fiche-cat">
+                  {categories.map(cat => (
+                    <option value={cat.dir} selected={cat.dir === editCat}>{cat.label}</option>
+                  ))}
+                  <option value="__new__">+ Nouvelle catégorie…</option>
+                </select>
+              </div>
+
+              <div class="form-field" id="new-cat-field">
+                <label for="new-cat-name">Nom de la nouvelle catégorie</label>
+                <input class="app-input" type="text" id="new-cat-name" placeholder="ex : Réseau" autocomplete="off" />
+              </div>
+
+              <div class="form-field">
+                <label for="fiche-slug">
+                  Identifiant <span class="required">*</span>
+                  {!isEdit && <span class="auto-badge">auto</span>}
+                </label>
+                <input
+                  class="app-input"
+                  type="text"
+                  id="fiche-slug"
+                  value={editSlug}
+                  placeholder="configuration-dns"
+                  autocomplete="off"
+                />
+                <span class="url-preview" id="url-preview"></span>
+              </div>
+
+              <div class="form-field">
+                <label for="fiche-desc">Description <span class="field-hint">— affichée dans la sidebar</span></label>
+                <textarea class="app-input" id="fiche-desc" rows="3" placeholder="Résumé court du process.">{initialDesc}</textarea>
+              </div>
+
+              <div class="form-field">
+                <label for="fiche-subcat">Sous-catégorie <span class="field-hint">(optionnel)</span></label>
+                <input class="app-input" type="text" id="fiche-subcat" value={initialSubcat} placeholder="ex : Déploiement" autocomplete="off" />
+              </div>
+
+            </div>
+
+            {isEdit && (
+              <div class="danger-zone">
+                <button class="btn-delete" id="delete-btn" type="button">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  </svg>
+                  Supprimer cette fiche
+                </button>
+              </div>
+            )}
+          </aside>
+
+          <!-- ── Zone contenu MDX ── -->
+          <div class="editor-content">
+            <div class="content-header">
+              <span class="content-label">Contenu</span>
+              <span class="content-hint">Markdown (MDX)</span>
+            </div>
+            <textarea
+              class="content-area"
+              id="fiche-content"
+              spellcheck="false"
+              placeholder="## Contexte&#10;&#10;Décrivez le process ici…"
+            >{initialContent}</textarea>
+          </div>
+
+        </div>
+      </main>
+    </>
+  )}
+</AppLayout>
+
+<script define:vars={{ isEdit, editCat, editSlug, initialTitle }}>
+  function slugify(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  }
+
+  const catEl      = document.getElementById('fiche-cat')
+  const newCatEl   = document.getElementById('new-cat-field')
+  const newCatIn   = document.getElementById('new-cat-name')
+  const titleEl    = document.getElementById('fiche-title')
+  const slugEl     = document.getElementById('fiche-slug')
+  const descEl     = document.getElementById('fiche-desc')
+  const subcatEl   = document.getElementById('fiche-subcat')
+  const contentEl  = document.getElementById('fiche-content')
+  const saveBtn    = document.getElementById('save-btn')
+  const deleteBtn  = document.getElementById('delete-btn')
+  const errorBanner = document.getElementById('error-banner')
+  const errorText  = document.getElementById('error-text')
+  const errorClose = document.getElementById('error-close')
+  const dirtyBadge = document.getElementById('dirty-badge')
+  const headerTitle = document.getElementById('header-title')
+  const urlPreview = document.getElementById('url-preview')
+
+  if (!saveBtn) return // not-found state
+
+  // ── Dirty tracking ──────────────────────────────────────────────────
+  let isDirty = false
+  function markDirty() {
+    if (isDirty) return
+    isDirty = true
+    dirtyBadge.classList.add('visible')
+  }
+  ;[titleEl, slugEl, descEl, subcatEl, contentEl, catEl, newCatIn].forEach(el => {
+    el?.addEventListener('input', markDirty)
+    el?.addEventListener('change', markDirty)
+  })
+
+  // ── URL preview ─────────────────────────────────────────────────────
+  function updatePreview() {
+    const cat  = catEl.value === '__new__' ? '…' : catEl.value
+    const slug = slugEl.value || '…'
+    urlPreview.textContent = `/${cat}/${slug}/`
+  }
+  catEl.addEventListener('change', updatePreview)
+  slugEl.addEventListener('input', updatePreview)
+  updatePreview()
+
+  // ── Header title live update (create mode) ──────────────────────────
+  if (!isEdit) {
+    titleEl.addEventListener('input', () => {
+      const val = titleEl.value.trim()
+      headerTitle.textContent = val || 'Nouvelle fiche'
+      slugEl.value = slugify(titleEl.value)
+      updatePreview()
+    })
+  } else {
+    titleEl.addEventListener('input', () => {
+      const val = titleEl.value.trim()
+      headerTitle.textContent = val || initialTitle || 'Modifier'
+    })
+  }
+
+  // ── Nouvelle catégorie ──────────────────────────────────────────────
+  catEl.addEventListener('change', () => {
+    const isNew = catEl.value === '__new__'
+    newCatEl.style.display = isNew ? 'flex' : 'none'
+    if (isNew) newCatIn.focus()
+    updatePreview()
+  })
+
+  // ── Erreurs ─────────────────────────────────────────────────────────
+  function showError(msg) {
+    errorText.textContent = msg
+    errorBanner.classList.add('visible')
+  }
+  function hideError() {
+    errorBanner.classList.remove('visible')
+  }
+  errorClose?.addEventListener('click', hideError)
+
+  // ── Raccourci clavier ────────────────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault()
+      saveBtn.click()
+    }
+  })
+
+  // ── Sauvegarde ───────────────────────────────────────────────────────
+  saveBtn.addEventListener('click', async () => {
+    hideError()
+    const title      = titleEl.value.trim()
+    const slug       = slugEl.value.trim() || slugify(title)
+    const desc       = descEl.value.trim()
+    const subcat     = subcatEl.value.trim()
+    const content    = contentEl.value
+    const isNewCat   = catEl.value === '__new__'
+    const newCatLabel = newCatIn?.value.trim() ?? ''
+
+    if (!title)                       { showError('Le titre est requis.'); return }
+    if (!slug)                        { showError("L'identifiant est requis."); return }
+    if (isNewCat && !newCatLabel)     { showError('Le nom de la catégorie est requis.'); return }
+
+    const originalText = saveBtn.textContent
+    saveBtn.textContent = 'Enregistrement…'
+    saveBtn.disabled = true
+
+    try {
+      let category = catEl.value
+
+      if (isNewCat) {
+        const catRes  = await fetch('/api/admin/category', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newCatLabel }),
+        })
+        const catData = await catRes.json()
+        if (!catRes.ok) { showError(catData.error ?? 'Erreur création catégorie.'); return }
+        category = catData.dir
+      }
+
+      const method = isEdit ? 'PUT' : 'POST'
+      const body   = isEdit
+        ? { originalCategory: editCat, originalSlug: editSlug, category, slug, title, description: desc, subcategory: subcat, content }
+        : { category, slug, title, description: desc, subcategory: subcat, content }
+
+      const res  = await fetch('/api/admin/fiche', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) { showError(data.error ?? 'Erreur inconnue.'); return }
+
+      window.location.href = '/admin'
+    } catch {
+      showError('Erreur réseau.')
+    } finally {
+      saveBtn.textContent = originalText
+      saveBtn.disabled = false
+    }
+  })
+
+  // ── Suppression ───────────────────────────────────────────────────────
+  deleteBtn?.addEventListener('click', async () => {
+    if (!confirm(`Supprimer définitivement « ${initialTitle || editSlug} » ?\n\nCette action est irréversible.`)) return
+
+    deleteBtn.textContent = 'Suppression…'
+    deleteBtn.disabled = true
+
+    try {
+      const res  = await fetch('/api/admin/fiche', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: editCat, slug: editSlug }),
+      })
+      const data = await res.json()
+      if (!res.ok) { showError(data.error ?? 'Erreur suppression.'); return }
+      window.location.href = '/admin'
+    } catch {
+      showError('Erreur réseau.')
+    } finally {
+      deleteBtn.disabled = false
+      deleteBtn.textContent = 'Supprimer cette fiche'
+    }
+  })
+</script>
+
+<style>
+  /* ── Header ─────────────────────────────────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 0.875rem; min-width: 0; }
+  .logo-bg { background: #fff; border-radius: 4px; padding: 3px 6px; line-height: 0; flex-shrink: 0; }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    min-width: 0;
+  }
+  .breadcrumb a {
+    color: var(--subtle);
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .breadcrumb a:hover { color: var(--muted); }
+  .breadcrumb .sep { color: var(--subtle); flex-shrink: 0; }
+  .breadcrumb span:last-child {
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+
+  .dirty-badge {
+    font-size: 0.625rem;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+    line-height: 1;
+  }
+  .dirty-badge.visible { opacity: 1; }
+
+  .btn-sm { font-size: 0.8125rem; padding: 0.3rem 0.75rem; height: auto; }
+
+  /* ── Error banner ────────────────────────────────────────────────── */
+  .error-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--danger-bg);
+    border-bottom: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 0.8125rem;
+    padding: 0.6rem 1.5rem;
+  }
+  .error-banner.visible { display: flex; }
+  #error-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--danger); font-size: 0.875rem; padding: 0; line-height: 1;
+    flex-shrink: 0; opacity: 0.7; transition: opacity 0.15s;
+  }
+  #error-close:hover { opacity: 1; }
+
+  /* ── Layout ──────────────────────────────────────────────────────── */
+  main {
+    height: calc(100vh - 52px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-wrap {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 290px 1fr;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────────────── */
+  .editor-meta {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .meta-fields {
+    flex: 1;
+    padding: 1.5rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ── Form fields ─────────────────────────────────────────────────── */
+  .form-field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+  .form-field label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .form-field textarea.app-input { resize: vertical; min-height: 72px; }
+
+  .required { color: var(--accent); font-weight: 400; margin-left: 1px; }
+  .field-hint { font-size: 0.75rem; font-weight: 400; color: var(--subtle); text-transform: none; letter-spacing: 0; }
+  .auto-badge {
+    font-size: 0.65rem; font-weight: 500;
+    background: var(--border); color: var(--muted);
+    border-radius: 3px; padding: 0.1rem 0.35rem;
+    vertical-align: middle; margin-left: 0.3rem;
+    text-transform: uppercase; letter-spacing: 0.02em;
+  }
+
+  .url-preview {
+    font-size: 0.75rem;
+    color: var(--subtle);
+    font-family: ui-monospace, monospace;
+    margin-top: 0.1rem;
+  }
+
+  #new-cat-field { display: none; flex-direction: column; gap: 0.35rem; }
+
+  /* ── Danger zone ─────────────────────────────────────────────────── */
+  .danger-zone {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .btn-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--danger);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-delete:hover {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+  }
+  .btn-delete:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Content editor ──────────────────────────────────────────────── */
+  .editor-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .content-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+  .content-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .content-hint {
+    font-size: 0.75rem;
+    color: var(--subtle);
+  }
+
+  .content-area {
+    flex: 1;
+    width: 100%;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    background: var(--input-bg);
+    border: none;
+    color: var(--text);
+    padding: 1.25rem;
+    resize: none;
+    outline: none;
+  }
+  .content-area:focus {
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  /* ── Not found ───────────────────────────────────────────────────── */
+  .not-found {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; height: 100vh; color: var(--muted); font-size: 0.9rem;
+  }
+</style>

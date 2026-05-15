@@ -66,19 +66,12 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
         Procédures, guides et fiches techniques pour l'équipe IT. <br />
         <strong>{totalFiches} fiches</strong> réparties en <strong>{categories.length} catégories</strong>.
       </p>
-      <div class="hero-search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        Rechercher une fiche
-        <span class="hero-kbd">⌘K</span>
-      </div>
     </div>
 
     <!-- Category grid -->
     <div class="grid">
-      {categories.map(cat => (
-        <div class="card">
+      {categories.map((cat, i) => (
+        <div class="card" style={i >= 2 && i % 2 === 1 ? 'margin-top:1.5rem' : undefined}>
           <div class="card-head">
             <span class="card-icon" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" set:html={cat.icon} />
@@ -87,20 +80,38 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
             <span class="card-count">{cat.fiches.length}</span>
           </div>
           <ul class="card-list">
-            {cat.fiches.slice(0, 5).map(f => (
+            {cat.fiches.slice(0, 3).map(f => (
               <li>
                 <a href={f.href}>{f.title}</a>
               </li>
             ))}
-            {cat.fiches.length > 5 && (
-              <li class="card-more">
-                <a href={cat.fiches[0].href}>+{cat.fiches.length - 5} autres fiches →</a>
-              </li>
-            )}
           </ul>
+          {cat.fiches.length > 3 && (
+            <button class="card-more" data-expand-cat={cat.label} type="button">
+              +{cat.fiches.length - 3} autres fiches →
+            </button>
+          )}
         </div>
       ))}
     </div>
+
+    <script>
+      document.querySelectorAll<HTMLButtonElement>('[data-expand-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const label = btn.dataset.expandCat!
+          // Find the matching <details> in the sidebar
+          const details = Array.from(document.querySelectorAll<HTMLDetailsElement>('nav details'))
+            .find(d => {
+              const summary = d.querySelector('summary')
+              return summary?.textContent?.trim() === label
+            })
+          if (details) {
+            details.open = true
+            details.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }
+        })
+      })
+    </script>
 
   </div>
 
@@ -134,37 +145,20 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
     font-size: 1rem;
     color: var(--sl-color-gray-2);
     line-height: 1.65;
-    margin: 0 0 1.5rem;
-  }
-
-  .hero-search {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.875rem;
-    background: var(--sl-color-bg-nav);
-    border: 1px solid var(--sl-color-hairline-light);
-    border-radius: 0.4rem;
-    color: var(--sl-color-gray-3);
-    font-size: 0.875rem;
-    cursor: default;
-  }
-
-  .hero-kbd {
-    margin-left: 0.25rem;
-    background: var(--sl-color-bg-sidebar);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 0.25rem;
-    color: var(--sl-color-gray-4);
-    font-size: 0.7rem;
-    padding: 0.1rem 0.4rem;
+    margin: 0;
   }
 
   /* ── Grid ────────────────────────────────────────────── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+    align-items: start;
+  }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .card { margin-top: 0 !important; }
   }
 
   /* ── Card ────────────────────────────────────────────── */
@@ -244,9 +238,20 @@ const totalFiches = categories.reduce((sum, c) => sum + c.fiches.length, 0)
     background: var(--sl-color-bg-sidebar);
   }
 
-  .card-more a {
-    color: var(--sl-color-accent) !important;
-    font-size: 0.75rem !important;
-    margin-top: 0.25rem;
+  .card-more {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.4rem;
+    background: none;
+    border: none;
+    color: var(--sl-color-accent);
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: background 0.1s;
+  }
+  .card-more:hover {
+    background: var(--sl-color-bg-sidebar);
   }
 </style>

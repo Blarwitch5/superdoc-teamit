@@ -9,7 +9,7 @@ const isLoggedIn = !!Astro.locals.user
 {isLoggedIn && (
   <>
     <a
-      href="/keystatic/collection/fiches/create"
+      href="/admin/fiche/"
       class="text-sm text-white bg-[var(--sl-color-accent)] hover:bg-[var(--sl-color-accent-high)] px-3 py-1 rounded transition-colors font-medium"
     >
       + Nouvelle fiche
@@ -22,6 +22,13 @@ const isLoggedIn = !!Astro.locals.user
     </a>
   </>
 )}
+<a
+  href="/change-password"
+  class="text-sm text-[var(--sl-color-gray-2)] hover:text-[var(--sl-color-accent)] transition-colors"
+  title="Changer mon mot de passe"
+>
+  Mon compte
+</a>
 <a
   href="/logout"
   class="text-sm text-[var(--sl-color-gray-2)] hover:text-[var(--sl-color-accent)] transition-colors"

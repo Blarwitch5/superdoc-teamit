@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { mkdirSync, writeFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { jsonResponse } from '../../../lib/api'
-import { DOCS_PATH } from '../../../lib/content'
+import { DOCS_PATH, readOrder, writeOrder } from '../../../lib/content'
 
 function slugify(name: string): string {
   return name
@@ -46,6 +46,9 @@ export const POST: APIRoute = async ({ request }) => {
       join(categoryPath, 'index.mdx'),
       `---\ntitle: ${label}\ndescription: ${description}\ncategory: ${dir}\n---\n\n${description}\n`
     )
+    const order = readOrder()
+    if (!order.categories.includes(dir)) order.categories.push(dir)
+    writeOrder(order)
     return jsonResponse({ ok: true, dir, label })
   } catch {
     return jsonResponse({ error: 'Erreur lors de la création.' }, 500)

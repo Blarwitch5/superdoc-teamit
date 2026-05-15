@@ -6,6 +6,14 @@ const PUBLIC_PATHS = ['/login', '/api/auth']
 export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = new URL(context.request.url).pathname
 
+  // Block public sign-up — account creation is admin-only (via auth.api server-side)
+  if (pathname === '/api/auth/sign-up/email') {
+    return new Response(JSON.stringify({ error: 'Inscription désactivée.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
   if (PUBLIC_PATHS.some(path => pathname.startsWith(path))) {
     context.locals.user = null
     context.locals.session = null
@@ -15,7 +23,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Redirect to trailing slash so Starlight resolves index pages correctly
   // (e.g. /web → /web/). Skip API routes and static file paths.
   if (!pathname.endsWith('/') && !pathname.startsWith('/api/') && !pathname.startsWith('/keystatic') && !/\.[a-zA-Z0-9]+$/.test(pathname)) {
-    return context.redirect(pathname + '/', 301)
+    const search = new URL(context.request.url).search
+    return context.redirect(pathname + '/' + search, 301)
   }
 
   const session = await auth.api.getSession({ headers: context.request.headers })

@@ -50,7 +50,7 @@ for (const dir of getCategoryDirs(savedOrder)) {
   })
 
   if (!items.some(item => item.subcategory)) {
-    sidebar.push({ type: 'group', label, collapsed: false, badge: undefined, entries: items.map(toLink) })
+    sidebar.push({ type: 'group', label, collapsed: true, badge: undefined, entries: items.map(toLink) })
     continue
   }
 
@@ -64,7 +64,7 @@ for (const dir of getCategoryDirs(savedOrder)) {
   sidebar.push({
     type: 'group',
     label,
-    collapsed: false,
+    collapsed: true,
     badge: undefined,
     entries: [
       ...ungrouped.map(toLink),
@@ -73,7 +73,7 @@ for (const dir of getCategoryDirs(savedOrder)) {
         .map(([sub, subItems]): SidebarGroup => ({
           type: 'group',
           label: sub,
-          collapsed: false,
+          collapsed: true,
           badge: undefined,
           entries: subItems.map(toLink),
         })),

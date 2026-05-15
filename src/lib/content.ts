@@ -1,4 +1,4 @@
-import { readdirSync, statSync, readFileSync } from 'node:fs'
+import { readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 export const DOCS_PATH = join(process.cwd(), 'src/content/docs')
@@ -26,6 +26,10 @@ export function readOrder(): OrderData {
   } catch {
     return { categories: [], fiches: {} }
   }
+}
+
+export function writeOrder(order: OrderData): void {
+  writeFileSync(join(DOCS_PATH, '_order.json'), JSON.stringify(order, null, 2), 'utf-8')
 }
 
 export function getCategoryDirs(order: OrderData): string[] {
