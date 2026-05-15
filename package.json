@@ -11,6 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "setup-db": "tsx scripts/setup-db.ts",
     "create-user": "tsx scripts/create-user.ts",
     "publish": "pnpm build && pm2 reload teamit-superdoc"
   },
