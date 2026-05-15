@@ -9,12 +9,15 @@ La création de comptes est **réservée à l'administrateur** et se fait unique
 Se connecter au serveur Infomaniak (SSH), puis :
 
 ```bash
+export PATH="/srv/customer/.npm-global/bin:$PATH"
 cd /srv/customer/sites/superdoc.team-it.ch
 pnpm create-user "Prénom Nom" email@team-it.ch 'motdepasse'
 ```
 
-> **Note :** Si `pnpm` n'est pas trouvé, préfixer la commande avec le chemin complet :
-> `/srv/customer/.npm-global/bin/pnpm create-user ...`
+> **Note :** Le `export PATH` est nécessaire à chaque nouvelle session SSH car le PATH par défaut d'Infomaniak n'inclut pas le dossier npm global. Pour ne plus avoir à le faire, ajouter cette ligne dans `~/.bashrc` sur le serveur :
+> ```bash
+> echo 'export PATH="/srv/customer/.npm-global/bin:$PATH"' >> ~/.bashrc
+> ```
 
 > **Note :** Encadrer le mot de passe avec des apostrophes simples `'...'` s'il contient des caractères spéciaux (`!`, `$`, `@`, etc.).
 
@@ -24,6 +27,8 @@ pnpm create-user "Prénom Nom" email@team-it.ch 'motdepasse'
 
 **Exemple :**
 ```bash
+export PATH="/srv/customer/.npm-global/bin:$PATH"
+cd /srv/customer/sites/superdoc.team-it.ch
 pnpm create-user "Marie Dupont" marie.dupont@team-it.ch 'Sup3rS3cret!'
 ```
 
