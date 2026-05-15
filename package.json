@@ -13,7 +13,7 @@
     "astro": "astro",
     "setup-db": "tsx scripts/setup-db.ts",
     "create-user": "tsx scripts/create-user.ts",
-    "publish": "pnpm build && pm2 reload teamit-superdoc"
+    "publish": "pnpm build"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
