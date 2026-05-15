@@ -1,4 +1,8 @@
 ---
+import { readFileSync } from 'node:fs'
+import { join, basename } from 'node:path'
+import { parseFrontmatter, readOrder, getCategoryDirs, getOrderedFiles, DOCS_PATH } from '../lib/content'
+
 type FicheData = {
   createdBy?:  string
   createdAt?:  string
@@ -11,6 +15,7 @@ const data      = entry?.data as FicheData | undefined
 const entryId   = entry?.id ?? ''
 const isFiche   = entryId.includes('/') && !/\/index$/.test(entryId)
 
+// ── Metadata ──────────────────────────────────────────────────────────────
 const createdBy  = data?.createdBy?.trim()  ?? ''
 const createdAt  = data?.createdAt?.trim()  ?? ''
 const modifiedBy = data?.modifiedBy?.trim() ?? ''
@@ -27,28 +32,87 @@ function formatDate(dateStr: string): string {
   const m = String(d.getMinutes()).padStart(2, '0')
   return `${date} à ${h}h${m}`
 }
+
+// ── Pagination ────────────────────────────────────────────────────────────
+type FicheLink = { href: string; title: string }
+
+let prev: FicheLink | null = null
+let next: FicheLink | null = null
+
+if (isFiche) {
+  const savedOrder = readOrder()
+  const allFiches: FicheLink[] = []
+
+  for (const dir of getCategoryDirs(savedOrder)) {
+    for (const file of getOrderedFiles(dir, savedOrder)) {
+      const slug = basename(file).replace(/\.(mdx|md|mdoc)$/, '')
+      let title = slug
+      try {
+        const fm = parseFrontmatter(readFileSync(join(DOCS_PATH, dir, file), 'utf-8'))
+        if (fm.title) title = fm.title
+      } catch {}
+      allFiches.push({ href: `/${dir}/${slug}/`, title })
+    }
+  }
+
+  const idx = allFiches.findIndex(f => f.href === `/${entryId}/`)
+  if (idx > 0)                        prev = allFiches[idx - 1]
+  if (idx >= 0 && idx < allFiches.length - 1) next = allFiches[idx + 1]
+}
 ---
 
-{isFiche && (hasCreated || hasModified) && (
-  <footer class="fiche-footer">
-    {hasCreated && (
-      <p>
-        Créé par <strong>{createdBy}</strong>
-        {createdAt && <> le {formatDate(createdAt)}</>}
-      </p>
+{isFiche && (
+  <div class="fiche-footer">
+    {(hasCreated || hasModified) && (
+      <div class="meta">
+        {hasCreated && (
+          <p>Créé par <strong>{createdBy}</strong>{createdAt && <> le {formatDate(createdAt)}</>}</p>
+        )}
+        {hasModified && (
+          <p>Modifié par <strong>{modifiedBy}</strong>{modifiedAt && <> le {formatDate(modifiedAt)}</>}</p>
+        )}
+      </div>
     )}
-    {hasModified && (
-      <p>
-        Modifié par <strong>{modifiedBy}</strong>
-        {modifiedAt && <> le {formatDate(modifiedAt)}</>}
-      </p>
+
+    {(prev || next) && (
+      <nav class="pagination" aria-label="Navigation entre fiches">
+        <div class="pag-side">
+          {prev && (
+            <a href={prev.href} class="pag-link" rel="prev">
+              <span class="pag-dir">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                Précédente
+              </span>
+              <span class="pag-title">{prev.title}</span>
+            </a>
+          )}
+        </div>
+        <div class="pag-side pag-right">
+          {next && (
+            <a href={next.href} class="pag-link pag-next" rel="next">
+              <span class="pag-dir">
+                Suivante
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+              </span>
+              <span class="pag-title">{next.title}</span>
+            </a>
+          )}
+        </div>
+      </nav>
     )}
-  </footer>
+  </div>
 )}
 
 <style>
   .fiche-footer {
-    margin-top: 3rem;
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ── Metadata ── */
+  .meta {
     padding-top: 1.25rem;
     border-top: 1px solid var(--sl-color-hairline);
     font-size: 0.8125rem;
@@ -57,8 +121,46 @@ function formatDate(dateStr: string): string {
     flex-direction: column;
     gap: 0.25rem;
   }
-  .fiche-footer strong {
-    color: var(--sl-color-text);
-    font-weight: 600;
+  .meta strong { color: var(--sl-color-text); font-weight: 600; }
+
+  /* ── Pagination ── */
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--sl-color-hairline);
   }
+
+  .pag-side { flex: 1; min-width: 0; }
+  .pag-right { text-align: right; }
+
+  .pag-link {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: var(--sl-color-gray-2);
+    transition: color 0.15s;
+    max-width: 100%;
+  }
+  .pag-link:hover { color: var(--sl-color-white); }
+
+  .pag-dir {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-3);
+  }
+  .pag-next .pag-dir { justify-content: flex-end; }
+
+  .pag-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pag-link:hover .pag-title { color: var(--sl-color-accent); }
 </style>

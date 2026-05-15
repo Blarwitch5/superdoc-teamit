@@ -1,11 +1,11 @@
 import { bg as joinValues, bh as stringifyPrimitive, bi as parsedType$1, aW as maybeRenderHead, bf as unescapeHTML, a4 as renderTemplate, a_ as renderSlot, bj as defineStyleVars, a3 as renderComponent, aX as Fragment, x as spreadAttributes, aY as addAttribute, aQ as AstroUserError, b3 as object, b1 as string, b5 as _enum, a$ as union, b6 as record, bk as looseObject, aZ as renderHead, bl as array, b0 as boolean, b9 as _undefined } from './sequence_BHhiZ0XQ.mjs';
 import { c as createComponent } from './astro-component_Dpsra13u.mjs';
+import { readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { r as readOrder, g as getCategoryDirs, b as getOrderedFiles, p as parseFrontmatter, D as DOCS_PATH } from './content_ChDt9Z8_.mjs';
 import { r as renderScript } from './script_T86Sxpel.mjs';
 import { c as config, a as createSvgComponent, b as stripTrailingSlash, d as stripLeadingSlash, e as ensureHtmlExtension, f as stripHtmlExtension, h as ensureTrailingSlash, p as project, B as BuiltInDefaultLocale, i as getCollection, j as pickLang, s as stripLeadingAndTrailingSlashes, k as ensureLeadingSlash, l as stripExtension, g as getCollectionPathFromRoot, m as getEntry, u as useTranslations } from './translations_BkR_h1WY.mjs';
 import { $ as $$Image } from './_astro_assets_OVhlXBWT.mjs';
-import { readFileSync } from 'node:fs';
-import { join, basename } from 'node:path';
-import { r as readOrder, g as getCategoryDirs, D as DOCS_PATH, p as parseFrontmatter, b as getOrderedFiles } from './content_ChDt9Z8_.mjs';
 
 const error = () => {
     const Sizable = {
@@ -445,9 +445,32 @@ const $$FicheFooter = createComponent(($$result, $$props, $$slots) => {
     const m = String(d.getMinutes()).padStart(2, "0");
     return `${date} à ${h}h${m}`;
   }
-  return renderTemplate`${isFiche && (hasCreated || hasModified) && renderTemplate`${maybeRenderHead()}<footer class="fiche-footer astro-wslmb6s7">${hasCreated && renderTemplate`<p class="astro-wslmb6s7">
-Créé par <strong class="astro-wslmb6s7">${createdBy}</strong>${createdAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(createdAt)}` })}`}</p>`}${hasModified && renderTemplate`<p class="astro-wslmb6s7">
-Modifié par <strong class="astro-wslmb6s7">${modifiedBy}</strong>${modifiedAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(modifiedAt)}` })}`}</p>`}</footer>`}`;
+  let prev = null;
+  let next = null;
+  if (isFiche) {
+    const savedOrder = readOrder();
+    const allFiches = [];
+    for (const dir of getCategoryDirs(savedOrder)) {
+      for (const file of getOrderedFiles(dir, savedOrder)) {
+        const slug = basename(file).replace(/\.(mdx|md|mdoc)$/, "");
+        let title = slug;
+        try {
+          const fm = parseFrontmatter(readFileSync(join(DOCS_PATH, dir, file), "utf-8"));
+          if (fm.title) title = fm.title;
+        } catch {
+        }
+        allFiches.push({ href: `/${dir}/${slug}/`, title });
+      }
+    }
+    const idx = allFiches.findIndex((f) => f.href === `/${entryId}/`);
+    if (idx > 0) prev = allFiches[idx - 1];
+    if (idx >= 0 && idx < allFiches.length - 1) next = allFiches[idx + 1];
+  }
+  return renderTemplate`${isFiche && renderTemplate`${maybeRenderHead()}<div class="fiche-footer astro-wslmb6s7">${(hasCreated || hasModified) && renderTemplate`<div class="meta astro-wslmb6s7">${hasCreated && renderTemplate`<p class="astro-wslmb6s7">Créé par <strong class="astro-wslmb6s7">${createdBy}</strong>${createdAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(createdAt)}` })}`}</p>`}${hasModified && renderTemplate`<p class="astro-wslmb6s7">Modifié par <strong class="astro-wslmb6s7">${modifiedBy}</strong>${modifiedAt && renderTemplate`${renderComponent($$result, "Fragment", Fragment, { "class": "astro-wslmb6s7" }, { "default": ($$result2) => renderTemplate` le ${formatDate(modifiedAt)}` })}`}</p>`}</div>`}${(prev || next) && renderTemplate`<nav class="pagination astro-wslmb6s7" aria-label="Navigation entre fiches"><div class="pag-side astro-wslmb6s7">${prev && renderTemplate`<a${addAttribute(prev.href, "href")} class="pag-link astro-wslmb6s7" rel="prev"><span class="pag-dir astro-wslmb6s7"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="astro-wslmb6s7"><polyline points="15 18 9 12 15 6" class="astro-wslmb6s7"></polyline></svg>
+Précédente
+</span><span class="pag-title astro-wslmb6s7">${prev.title}</span></a>`}</div><div class="pag-side pag-right astro-wslmb6s7">${next && renderTemplate`<a${addAttribute(next.href, "href")} class="pag-link pag-next astro-wslmb6s7" rel="next"><span class="pag-dir astro-wslmb6s7">
+Suivante
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="astro-wslmb6s7"><polyline points="9 18 15 12 9 6" class="astro-wslmb6s7"></polyline></svg></span><span class="pag-title astro-wslmb6s7">${next.title}</span></a>`}</div></nav>`}</div>`}`;
 }, "/Users/blarwitch/Sites/teamit/teamit-superdoc/src/components/FicheFooter.astro", void 0);
 
 const $$Head = createComponent(($$result, $$props, $$slots) => {
