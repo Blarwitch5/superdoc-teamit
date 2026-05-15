@@ -1,6 +1,6 @@
 import { $ as defineMiddleware, aQ as AstroUserError, aa as sequence } from './chunks/sequence_BHhiZ0XQ.mjs';
 import { a as auth } from './chunks/auth_DnJXfvn4.mjs';
-import { u as useTranslations } from './chunks/translations_DOv6RBat.mjs';
+import { u as useTranslations } from './chunks/translations_BkR_h1WY.mjs';
 
 const PUBLIC_PATHS = ["/login", "/api/auth"];
 const onRequest$2 = defineMiddleware(async (context, next) => {
