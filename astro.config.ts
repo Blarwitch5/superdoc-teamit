@@ -81,6 +81,7 @@ export default defineConfig({
         Sidebar:     './src/components/DynamicSidebar.astro',
         PageSidebar:      './src/components/EditPageSidebar.astro',
         MobileMenuFooter: './src/components/MobileMenuFooter.astro',
+        Pagination:       './src/components/FichePagination.astro',
       },
       // Sidebar is fully managed at runtime by DynamicSidebar.astro
       sidebar: [],
