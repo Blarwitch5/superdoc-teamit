@@ -22,9 +22,9 @@ for (const dir of getCategoryDirs(savedOrder)) {
   }
 }
 
-// Find current page position
-const currentPath = new URL(Astro.request.url).pathname.replace(/([^/])$/, '$1/')
-const currentIdx  = allFiches.findIndex(f => f.href === currentPath)
+// Find current page from Starlight route entry id (e.g. "web/creation-hebergement-infomaniak")
+const entryId    = Astro.locals.starlightRoute?.entry?.id ?? ''
+const currentIdx = allFiches.findIndex(f => f.href === `/${entryId}/`)
 
 const prev = currentIdx > 0 ? allFiches[currentIdx - 1] : null
 const next = currentIdx >= 0 && currentIdx < allFiches.length - 1 ? allFiches[currentIdx + 1] : null
